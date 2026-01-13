@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# Database (SQLite)
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+
+# Environment files (chứa thông tin nhạy cảm)
+.env
+.env.local
+.env.production
+backend/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage
+coverage/
+
+# Certificates
+*.pem
+*.key
+*.crt

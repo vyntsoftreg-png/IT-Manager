@@ -1,0 +1,103 @@
+/* Ping Status Dot Styles */
+.ping-dot {
+    display: inline-block;
+    border-radius: 50%;
+    background-color: var(--dot-color, #8c8c8c);
+    box-shadow: 0 0 0 0 var(--dot-color, #8c8c8c);
+}
+
+.ping-dot-small {
+    width: 8px;
+    height: 8px;
+}
+
+.ping-dot-large {
+    width: 12px;
+    height: 12px;
+}
+
+/* Online - Green pulsing */
+.ping-dot-online {
+    animation: pulse-green 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-green {
+    0% {
+        box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(82, 196, 26, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(82, 196, 26, 0);
+    }
+}
+
+/* Offline - Red pulsing */
+.ping-dot-offline {
+    animation: pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 77, 79, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+    }
+}
+
+/* Checking - Blue rotating */
+.ping-dot-checking {
+    animation: pulse-blue 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-blue {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* Unknown - Gray static */
+.ping-dot-unknown {
+    opacity: 0.5;
+}
+
+/* Blocked (ICMP blocked but online) - Yellow/Orange pulsing */
+.ping-dot-blocked {
+    animation: pulse-yellow 1.5s ease-in-out infinite;
+}
+
+/* Error - Red static */
+.ping-dot-error {
+    opacity: 0.8;
+}
+
+@keyframes pulse-yellow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(250, 173, 20, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(250, 173, 20, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(250, 173, 20, 0);
+    }
+}
