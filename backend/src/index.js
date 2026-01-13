@@ -25,6 +25,25 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api', routes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+    const frontendPath = path.join(__dirname, '../../frontend/dist');
+    app.use(express.static(frontendPath));
+
+    // Handle SPA routing - serve index.html for all non-API routes
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) {
+            return next();
+        }
+        res.sendFile(path.join(frontendPath, 'index.html'));
+    });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
@@ -35,7 +54,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 handler
+// 404 handler for API routes
 app.use((req, res) => {
     res.status(404).json({
         success: false,
