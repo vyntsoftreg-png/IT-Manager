@@ -73,6 +73,22 @@ const startServer = async () => {
         await sequelize.sync();
         console.log('✅ Database synchronized');
 
+        // Auto-seed default admin user if no users exist
+        const { User } = require('./models');
+        const userCount = await User.count();
+        if (userCount === 0) {
+            console.log('🔄 No users found, creating default admin...');
+            await User.create({
+                username: 'admin',
+                email: 'admin@itmanager.local',
+                password_hash: 'admin123',
+                full_name: 'Administrator',
+                role: 'admin',
+                is_active: true,
+            });
+            console.log('✅ Default admin created (admin / admin123)');
+        }
+
         app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
             console.log(`📚 API available at http://localhost:${PORT}/api`);
