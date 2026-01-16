@@ -13,7 +13,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(helmet());
+// Configure helmet for SPA - allow inline scripts needed by Vite/React
+app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for SPA compatibility
+    crossOriginEmbedderPolicy: false,
+}));
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     credentials: true,
