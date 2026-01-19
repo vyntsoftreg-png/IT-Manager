@@ -15,6 +15,8 @@ import AccountsPage from './pages/AccountsPage';
 import AuditLogPage from './pages/AuditLogPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import TasksPage from './pages/TasksPage';
+import SupportRequestPage from './pages/SupportRequestPage';
 
 import './App.css';
 
@@ -85,6 +87,7 @@ const ThemedApp = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/support" element={<SupportRequestPage />} />
               <Route
                 path="/"
                 element={
@@ -97,6 +100,7 @@ const ThemedApp = () => {
                 <Route path="devices" element={<DevicesPage />} />
                 <Route path="ip-map" element={<IpMapPage />} />
                 <Route path="accounts" element={<AccountsPage />} />
+                <Route path="tasks" element={<TasksPage />} />
                 <Route path="audit-logs" element={<AuditLogPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />

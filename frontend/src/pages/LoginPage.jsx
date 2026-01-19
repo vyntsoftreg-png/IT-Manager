@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const { Title, Text } = Typography;
 
@@ -10,19 +12,20 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const onFinish = async (values) => {
         setLoading(true);
         try {
             const result = await login(values.username, values.password);
             if (result.success) {
-                message.success('Đăng nhập thành công!');
+                message.success(t('auth.loginSuccess'));
                 navigate('/');
             } else {
-                message.error(result.message || 'Đăng nhập thất bại');
+                message.error(result.message || t('auth.loginFailed'));
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Đăng nhập thất bại');
+            message.error(error.response?.data?.message || t('auth.loginFailed'));
         } finally {
             setLoading(false);
         }
@@ -31,6 +34,9 @@ const LoginPage = () => {
     return (
         <div className="login-container">
             <div className="login-background" />
+            <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+                <LanguageSwitcher />
+            </div>
             <Card className="login-card" bordered={false}>
                 <Space direction="vertical" size="large" style={{ width: '100%' }}>
                     <div className="login-header">
@@ -41,7 +47,7 @@ const LoginPage = () => {
                             IT Manager
                         </Title>
                         <Text type="secondary">
-                            Hệ thống quản lý hạ tầng IT
+                            {t('auth.loginTitle')}
                         </Text>
                     </div>
 
@@ -54,21 +60,21 @@ const LoginPage = () => {
                     >
                         <Form.Item
                             name="username"
-                            rules={[{ required: true, message: 'Vui lòng nhập username!' }]}
+                            rules={[{ required: true, message: t('validation.required') }]}
                         >
                             <Input
                                 prefix={<UserOutlined />}
-                                placeholder="Username"
+                                placeholder={t('auth.username')}
                             />
                         </Form.Item>
 
                         <Form.Item
                             name="password"
-                            rules={[{ required: true, message: 'Vui lòng nhập password!' }]}
+                            rules={[{ required: true, message: t('validation.required') }]}
                         >
                             <Input.Password
                                 prefix={<LockOutlined />}
-                                placeholder="Password"
+                                placeholder={t('auth.password')}
                             />
                         </Form.Item>
 
@@ -80,14 +86,14 @@ const LoginPage = () => {
                                 block
                                 className="login-button"
                             >
-                                Đăng nhập
+                                {t('auth.loginButton')}
                             </Button>
                         </Form.Item>
                     </Form>
 
                     <div className="login-footer">
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                            Demo accounts: admin / itops / viewer (password: [username]123)
+                            {t('auth.demoAccounts')}
                         </Text>
                     </div>
                 </Space>

@@ -11,6 +11,7 @@ import {
     DownloadOutlined, UploadOutlined, LockOutlined, EyeInvisibleOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { deviceService } from '../services/deviceService';
 import { accountService } from '../services/accountService';
 import { pingService } from '../services/pingService';
@@ -24,6 +25,7 @@ const { Option } = Select;
 const DevicesPage = () => {
     const { canEdit } = useAuth();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [form] = Form.useForm();
 
     // State
@@ -389,7 +391,7 @@ const DevicesPage = () => {
 
     const columns = [
         {
-            title: 'Thiết bị',
+            title: t('devices.deviceName'),
             dataIndex: 'name',
             key: 'name',
             fixed: 'left',
@@ -407,7 +409,7 @@ const DevicesPage = () => {
             ),
         },
         {
-            title: 'Loại',
+            title: t('common.type'),
             dataIndex: 'type',
             key: 'type',
             width: 120,
@@ -443,7 +445,7 @@ const DevicesPage = () => {
             },
         },
         {
-            title: 'Vị trí',
+            title: t('devices.location'),
             dataIndex: 'location',
             key: 'location',
             width: 150,
@@ -451,7 +453,7 @@ const DevicesPage = () => {
             render: (text) => text || <Text type="secondary">-</Text>,
         },
         {
-            title: 'Người dùng',
+            title: t('devices.assignedTo'),
             dataIndex: 'assigned_user',
             key: 'assigned_user',
             width: 150,
@@ -459,20 +461,20 @@ const DevicesPage = () => {
             render: (text) => text || <Text type="secondary">-</Text>,
         },
         {
-            title: 'Trạng thái',
+            title: t('common.status'),
             dataIndex: 'status',
             key: 'status',
             width: 120,
             render: (status) => getStatusTag(status),
         },
         {
-            title: 'Hành động',
+            title: t('common.actions'),
             key: 'actions',
             fixed: 'right',
             width: 130,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Xem chi tiết">
+                    <Tooltip title={t('common.view')}>
                         <Button
                             type="text"
                             size="small"
@@ -482,7 +484,7 @@ const DevicesPage = () => {
                     </Tooltip>
                     {canEdit && (
                         <>
-                            <Tooltip title="Sửa">
+                            <Tooltip title={t('common.edit')}>
                                 <Button
                                     type="text"
                                     size="small"
@@ -491,14 +493,14 @@ const DevicesPage = () => {
                                 />
                             </Tooltip>
                             <Popconfirm
-                                title="Xóa thiết bị"
-                                description="Bạn có chắc chắn muốn xóa thiết bị này?"
+                                title={t('common.confirmDelete')}
+                                description={t('devices.confirmDeleteDevice')}
                                 onConfirm={() => handleDelete(record.id)}
-                                okText="Xóa"
-                                cancelText="Hủy"
+                                okText={t('common.delete')}
+                                cancelText={t('common.cancel')}
                                 okButtonProps={{ danger: true }}
                             >
-                                <Tooltip title="Xóa">
+                                <Tooltip title={t('common.delete')}>
                                     <Button
                                         type="text"
                                         size="small"
@@ -518,11 +520,11 @@ const DevicesPage = () => {
         <div className="devices-page">
             <div className="page-header">
                 <div>
-                    <Title level={3}>Quản lý Thiết bị</Title>
-                    <Text type="secondary">Quản lý tất cả thiết bị trong hệ thống</Text>
+                    <Title level={3}>{t('devices.title')}</Title>
+                    <Text type="secondary">{t('devices.subtitle')}</Text>
                 </div>
                 <Space>
-                    <Tooltip title="Xuất CSV">
+                    <Tooltip title={t('common.export')}>
                         <Button icon={<DownloadOutlined />} onClick={handleExportCSV}>
                             Export
                         </Button>
@@ -535,7 +537,7 @@ const DevicesPage = () => {
                                 </Button>
                             </Tooltip>
                             <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal()}>
-                                Thêm thiết bị
+                                {t('devices.addDevice')}
                             </Button>
                         </>
                     )}
@@ -546,7 +548,7 @@ const DevicesPage = () => {
                 <Row gutter={[16, 16]} align="middle">
                     <Col xs={24} sm={12} md={8} lg={6}>
                         <Input.Search
-                            placeholder="Tìm theo tên, hostname, serial..."
+                            placeholder={t('devices.searchPlaceholder')}
                             onSearch={handleSearch}
                             allowClear
                             prefix={<SearchOutlined />}
@@ -554,7 +556,7 @@ const DevicesPage = () => {
                     </Col>
                     <Col xs={12} sm={6} md={4} lg={3}>
                         <Select
-                            placeholder="Loại thiết bị"
+                            placeholder={t('devices.deviceType')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.type}
@@ -569,7 +571,7 @@ const DevicesPage = () => {
                     </Col>
                     <Col xs={12} sm={6} md={4} lg={3}>
                         <Select
-                            placeholder="Trạng thái"
+                            placeholder={t('common.status')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.status}
@@ -583,7 +585,7 @@ const DevicesPage = () => {
                         </Select>
                     </Col>
                     <Col>
-                        <Tooltip title="Làm mới">
+                        <Tooltip title={t('common.refresh')}>
                             <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
                         </Tooltip>
                     </Col>
@@ -593,19 +595,19 @@ const DevicesPage = () => {
             <Card bordered={false} className="table-card">
                 {selectedRowKeys.length > 0 && (
                     <div style={{ marginBottom: 16, padding: '12px 16px', background: '#1890ff10', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text>Đã chọn <Text strong>{selectedRowKeys.length}</Text> thiết bị</Text>
+                        <Text>{t('common.selected')} <Text strong>{selectedRowKeys.length}</Text> {t('devices.items')}</Text>
                         <Space>
-                            <Button size="small" onClick={() => setSelectedRowKeys([])}>Bỏ chọn</Button>
+                            <Button size="small" onClick={() => setSelectedRowKeys([])}>{t('common.deselect')}</Button>
                             <Popconfirm
-                                title="Xóa nhiều thiết bị"
-                                description={`Bạn có chắc chắn muốn xóa ${selectedRowKeys.length} thiết bị đã chọn?`}
+                                title={t('devices.bulkDelete')}
+                                description={t('devices.confirmBulkDelete', { count: selectedRowKeys.length })}
                                 onConfirm={() => bulkDeleteMutation.mutate(selectedRowKeys)}
-                                okText="Xóa"
-                                cancelText="Hủy"
+                                okText={t('common.delete')}
+                                cancelText={t('common.cancel')}
                                 okButtonProps={{ danger: true, loading: bulkDeleteMutation.isPending }}
                             >
                                 <Button danger size="small" icon={<DeleteOutlined />}>
-                                    Xóa tất cả
+                                    {t('devices.bulkDelete')}
                                 </Button>
                             </Popconfirm>
                         </Space>
@@ -626,7 +628,7 @@ const DevicesPage = () => {
                         pageSize: pagination.limit,
                         total: pagination.total,
                         showSizeChanger: true,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thiết bị`,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} ${t('common.of')} ${total}`,
                     }}
                     onChange={handleTableChange}
                 />

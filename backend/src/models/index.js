@@ -7,6 +7,8 @@ const AdminAccount = require('./AdminAccount');
 const AuditLog = require('./AuditLog');
 const SystemSetting = require('./SystemSetting');
 const PingHistory = require('./PingHistory');
+const Task = require('./Task');
+const TaskComment = require('./TaskComment');
 
 // Define associations
 
@@ -70,6 +72,44 @@ AuditLog.belongsTo(User, {
     as: 'user',
 });
 
+// Task associations
+User.hasMany(Task, {
+    foreignKey: 'assigned_to',
+    as: 'assignedTasks',
+});
+Task.belongsTo(User, {
+    foreignKey: 'assigned_to',
+    as: 'assignee',
+});
+
+User.hasMany(Task, {
+    foreignKey: 'created_by',
+    as: 'createdTasks',
+});
+Task.belongsTo(User, {
+    foreignKey: 'created_by',
+    as: 'creator',
+});
+
+// TaskComment associations
+Task.hasMany(TaskComment, {
+    foreignKey: 'task_id',
+    as: 'comments',
+});
+TaskComment.belongsTo(Task, {
+    foreignKey: 'task_id',
+    as: 'task',
+});
+
+User.hasMany(TaskComment, {
+    foreignKey: 'user_id',
+    as: 'taskComments',
+});
+TaskComment.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user',
+});
+
 module.exports = {
     sequelize,
     User,
@@ -80,4 +120,6 @@ module.exports = {
     AuditLog,
     SystemSetting,
     PingHistory,
+    Task,
+    TaskComment,
 };

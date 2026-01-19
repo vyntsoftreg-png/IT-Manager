@@ -7,6 +7,7 @@ import {
     SettingOutlined, SaveOutlined, SunOutlined, MoonOutlined,
     PlusOutlined, EditOutlined, DeleteOutlined, DatabaseOutlined
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { settingsService } from '../services/settingsService';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +17,7 @@ const { Title, Text } = Typography;
 const SettingsPage = () => {
     const { isDarkMode, setTheme } = useTheme();
     const { user } = useAuth();
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
@@ -54,7 +56,7 @@ const SettingsPage = () => {
             }
         } catch (error) {
             console.error('Load settings error:', error);
-            message.error('Không thể tải cài đặt');
+            message.error(t('common.operationFailed'));
         } finally {
             setSettingsLoading(false);
         }
@@ -76,9 +78,9 @@ const SettingsPage = () => {
         setLoading(true);
         try {
             localStorage.setItem('userSettings', JSON.stringify(values));
-            message.success('Đã lưu cài đặt!');
+            message.success(t('common.saveSuccess'));
         } catch (error) {
-            message.error('Có lỗi xảy ra');
+            message.error(t('common.error'));
         } finally {
             setLoading(false);
         }
@@ -113,10 +115,10 @@ const SettingsPage = () => {
     const handleDelete = async (id) => {
         try {
             await settingsService.delete(id);
-            message.success('Đã xóa thành công');
+            message.success(t('common.deleteSuccess'));
             loadSettings(selectedCategory);
         } catch (error) {
-            message.error('Không thể xóa');
+            message.error(t('common.operationFailed'));
         }
     };
 
@@ -127,17 +129,17 @@ const SettingsPage = () => {
 
             if (editingItem) {
                 await settingsService.update(editingItem.id, values);
-                message.success('Đã cập nhật thành công');
+                message.success(t('common.updateSuccess'));
             } else {
                 await settingsService.create(values);
-                message.success('Đã thêm mới thành công');
+                message.success(t('common.createSuccess'));
             }
 
             setModalOpen(false);
             loadSettings(selectedCategory);
         } catch (error) {
             if (error.errorFields) return; // Validation error
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || t('common.error'));
         }
     };
 
@@ -148,7 +150,7 @@ const SettingsPage = () => {
             message.success(response.message);
             loadSettings(selectedCategory);
         } catch (error) {
-            message.error('Không thể khởi tạo dữ liệu mặc định');
+            message.error(t('common.operationFailed'));
         }
     };
 
@@ -170,19 +172,19 @@ const SettingsPage = () => {
             render: (key) => <code style={{ fontSize: 12 }}>{key}</code>,
         },
         {
-            title: 'Nhãn hiển thị',
+            title: t('settings.displayLabel'),
             dataIndex: 'label',
             key: 'label',
         },
         {
-            title: 'Màu',
+            title: t('settings.color'),
             dataIndex: 'color',
             key: 'color',
             width: 100,
             render: (color) => color ? <Tag color={color}>{color}</Tag> : '-',
         },
         {
-            title: 'Thứ tự',
+            title: t('settings.sortOrder'),
             dataIndex: 'sort_order',
             key: 'sort_order',
             width: 80,
@@ -226,19 +228,19 @@ const SettingsPage = () => {
     const tabItems = [
         {
             key: 'general',
-            label: 'Cài đặt chung',
+            label: t('settings.general'),
             children: (
                 <>
                     <Card
-                        title={<Space>{isDarkMode ? <MoonOutlined /> : <SunOutlined />} Giao diện</Space>}
+                        title={<Space>{isDarkMode ? <MoonOutlined /> : <SunOutlined />} {t('settings.appearance')}</Space>}
                         bordered={false}
                         style={{ marginBottom: 24 }}
                     >
                         <Row align="middle" justify="space-between">
                             <Col>
-                                <Text strong>Chế độ tối</Text>
+                                <Text strong>{t('settings.darkMode')}</Text>
                                 <br />
-                                <Text type="secondary">Giảm mỏi mắt khi làm việc trong môi trường thiếu sáng</Text>
+                                <Text type="secondary">{t('settings.darkModeDescription')}</Text>
                             </Col>
                             <Col>
                                 <Switch
@@ -264,17 +266,17 @@ const SettingsPage = () => {
                             dateFormat: savedSettings.dateFormat || 'DD/MM/YYYY',
                         }}
                     >
-                        <Card title="Hiển thị" bordered={false} style={{ marginBottom: 24 }}>
-                            <Form.Item name="tablePageSize" label="Số dòng mặc định trên mỗi trang">
+                        <Card title={t('settings.display')} bordered={false} style={{ marginBottom: 24 }}>
+                            <Form.Item name="tablePageSize" label={t('settings.rowsPerPage')}>
                                 <Select style={{ width: 200 }}>
-                                    <Select.Option value={10}>10 dòng</Select.Option>
-                                    <Select.Option value={20}>20 dòng</Select.Option>
-                                    <Select.Option value={50}>50 dòng</Select.Option>
-                                    <Select.Option value={100}>100 dòng</Select.Option>
+                                    <Select.Option value={10}>{t('settings.rows', { count: 10 })}</Select.Option>
+                                    <Select.Option value={20}>{t('settings.rows', { count: 20 })}</Select.Option>
+                                    <Select.Option value={50}>{t('settings.rows', { count: 50 })}</Select.Option>
+                                    <Select.Option value={100}>{t('settings.rows', { count: 100 })}</Select.Option>
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="dateFormat" label="Định dạng ngày tháng">
+                            <Form.Item name="dateFormat" label={t('settings.dateFormat')}>
                                 <Radio.Group>
                                     <Radio value="DD/MM/YYYY">DD/MM/YYYY</Radio>
                                     <Radio value="YYYY-MM-DD">YYYY-MM-DD</Radio>
@@ -283,28 +285,28 @@ const SettingsPage = () => {
                             </Form.Item>
                         </Card>
 
-                        <Card title="Thông báo & Làm mới" bordered={false} style={{ marginBottom: 24 }}>
-                            <Form.Item name="showNotifications" label="Hiển thị thông báo" valuePropName="checked">
-                                <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                        <Card title={t('settings.notifications')} bordered={false} style={{ marginBottom: 24 }}>
+                            <Form.Item name="showNotifications" label={t('settings.showNotifications')} valuePropName="checked">
+                                <Switch checkedChildren={t('common.on')} unCheckedChildren={t('common.off')} />
                             </Form.Item>
 
-                            <Form.Item name="autoRefresh" label="Tự động làm mới dữ liệu" valuePropName="checked">
-                                <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                            <Form.Item name="autoRefresh" label={t('settings.autoRefresh')} valuePropName="checked">
+                                <Switch checkedChildren={t('common.on')} unCheckedChildren={t('common.off')} />
                             </Form.Item>
 
-                            <Form.Item name="refreshInterval" label="Thời gian làm mới">
+                            <Form.Item name="refreshInterval" label={t('settings.refreshInterval')}>
                                 <Select style={{ width: 200 }}>
-                                    <Select.Option value={30}>30 giây</Select.Option>
-                                    <Select.Option value={60}>1 phút</Select.Option>
-                                    <Select.Option value={120}>2 phút</Select.Option>
-                                    <Select.Option value={300}>5 phút</Select.Option>
+                                    <Select.Option value={30}>{t('settings.seconds', { count: 30 })}</Select.Option>
+                                    <Select.Option value={60}>{t('settings.minutes', { count: 1 })}</Select.Option>
+                                    <Select.Option value={120}>{t('settings.minutes', { count: 2 })}</Select.Option>
+                                    <Select.Option value={300}>{t('settings.minutes', { count: 5 })}</Select.Option>
                                 </Select>
                             </Form.Item>
                         </Card>
 
                         <Card bordered={false}>
                             <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
-                                Lưu cài đặt
+                                {t('settings.saveSettings')}
                             </Button>
                         </Card>
                     </Form>
@@ -320,7 +322,7 @@ const SettingsPage = () => {
             label: (
                 <Space>
                     <DatabaseOutlined />
-                    Quản lý danh mục
+                    {t('settings.lookupManagement')}
                 </Space>
             ),
             children: (
@@ -347,17 +349,17 @@ const SettingsPage = () => {
                         <Col>
                             <Space>
                                 <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>
-                                    Thêm mới
+                                    {t('common.add')}
                                 </Button>
                                 <Popconfirm
-                                    title="Khởi tạo dữ liệu mặc định?"
-                                    description="Các giá trị đã tồn tại sẽ được giữ nguyên."
+                                    title={t('settings.seedDefaultsTitle')}
+                                    description={t('settings.seedDefaultsDesc')}
                                     onConfirm={handleSeedDefaults}
-                                    okText="Khởi tạo"
-                                    cancelText="Hủy"
+                                    okText={t('settings.initialize')}
+                                    cancelText={t('common.cancel')}
                                 >
                                     <Button icon={<DatabaseOutlined />}>
-                                        Khởi tạo mặc định
+                                        {t('settings.seedDefaults')}
                                     </Button>
                                 </Popconfirm>
                             </Space>
@@ -382,7 +384,7 @@ const SettingsPage = () => {
                         />
                     ) : (
                         <Empty
-                            description="Chưa có dữ liệu. Nhấn 'Khởi tạo mặc định' để tạo giá trị mẫu."
+                            description={t('settings.noData')}
                         />
                     )}
                 </Card>
@@ -395,9 +397,9 @@ const SettingsPage = () => {
             <div className="page-header">
                 <Title level={3}>
                     <SettingOutlined style={{ marginRight: 8 }} />
-                    Cài đặt
+                    {t('settings.title')}
                 </Title>
-                <Text type="secondary">Tùy chỉnh ứng dụng theo ý thích của bạn</Text>
+                <Text type="secondary">{t('settings.subtitle')}</Text>
             </div>
 
             <Tabs
@@ -409,12 +411,12 @@ const SettingsPage = () => {
 
             {/* Add/Edit Modal */}
             <Modal
-                title={editingItem ? 'Chỉnh sửa' : 'Thêm mới'}
+                title={editingItem ? t('common.edit') : t('common.add')}
                 open={modalOpen}
                 onOk={handleModalSubmit}
                 onCancel={() => setModalOpen(false)}
-                okText={editingItem ? 'Cập nhật' : 'Thêm'}
-                cancelText="Hủy"
+                okText={editingItem ? t('common.save') : t('common.add')}
+                cancelText={t('common.cancel')}
             >
                 <Form form={itemForm} layout="vertical" style={{ marginTop: 24 }}>
                     <Form.Item name="category" hidden>

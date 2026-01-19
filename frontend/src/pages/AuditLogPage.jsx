@@ -9,6 +9,7 @@ import {
     LogoutOutlined, KeyOutlined, ImportOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { auditService } from '../services/auditService';
 import { useAuth } from '../contexts/AuthContext';
 import dayjs from 'dayjs';
@@ -29,6 +30,7 @@ const actionIcons = {
 
 const AuditLogPage = () => {
     const { isAdmin } = useAuth();
+    const { t } = useTranslation();
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [selectedLog, setSelectedLog] = useState(null);
     const [filters, setFilters] = useState({
@@ -91,33 +93,54 @@ const AuditLogPage = () => {
         setIsDrawerOpen(true);
     };
 
-    // Get action tag
+    // Translation mapping for entity types (matching backend values)
+    const entityTypeKeys = {
+        'users': 'auditLog.entities.users',
+        'devices': 'auditLog.entities.devices',
+        'admin_accounts': 'auditLog.entities.admin_accounts',
+        'ip_addresses': 'auditLog.entities.ip_addresses',
+        'network_segments': 'auditLog.entities.network_segments',
+        'tasks': 'auditLog.entities.tasks',
+        'lookup_settings': 'auditLog.entities.lookup_settings',
+    };
+
+    // Get action tag with translation
     const getActionTag = (action) => {
         const config = actions.find((a) => a.value === action);
+        // Try translation first, fallback to backend label
+        const translationKey = `auditLog.actions.${action}`;
+        const translated = t(translationKey);
+        // If translation key returns the key itself, use backend label
+        const displayLabel = translated !== translationKey ? translated : (config?.label || action);
         return (
             <Tag color={config?.color || 'default'} icon={actionIcons[action]}>
-                {config?.label || action}
+                {displayLabel}
             </Tag>
         );
     };
 
-    // Get entity type label
+    // Get entity type label with translation
     const getEntityLabel = (type) => {
-        const config = entityTypes.find((t) => t.value === type);
+        const translationKey = entityTypeKeys[type];
+        if (translationKey) {
+            return t(translationKey);
+        }
+        // Fallback to backend label
+        const config = entityTypes.find((et) => et.value === type);
         return config?.label || type;
     };
 
     // Table columns
     const columns = [
         {
-            title: 'Thời gian',
+            title: t('auditLog.timestamp'),
             dataIndex: 'created_at',
             key: 'created_at',
             width: 160,
             render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm:ss'),
         },
         {
-            title: 'Người dùng',
+            title: t('auditLog.user'),
             dataIndex: 'user',
             key: 'user',
             width: 150,
@@ -129,14 +152,14 @@ const AuditLogPage = () => {
             ),
         },
         {
-            title: 'Hành động',
+            title: t('auditLog.action'),
             dataIndex: 'action',
             key: 'action',
             width: 130,
             render: (action) => getActionTag(action),
         },
         {
-            title: 'Đối tượng',
+            title: t('auditLog.entityType'),
             dataIndex: 'entity_type',
             key: 'entity_type',
             width: 150,
@@ -161,7 +184,7 @@ const AuditLogPage = () => {
             key: 'actions',
             width: 60,
             render: (_, record) => (
-                <Tooltip title="Xem chi tiết">
+                <Tooltip title={t('common.view')}>
                     <Button
                         type="text"
                         size="small"
@@ -177,7 +200,7 @@ const AuditLogPage = () => {
         return (
             <div className="audit-page">
                 <Card>
-                    <Empty description="Bạn không có quyền truy cập trang này" />
+                    <Empty description={t('auditLog.noAccess')} />
                 </Card>
             </div>
         );
@@ -189,9 +212,9 @@ const AuditLogPage = () => {
                 <div>
                     <Title level={3}>
                         <HistoryOutlined style={{ marginRight: 8 }} />
-                        Nhật ký hoạt động
+                        {t('auditLog.title')}
                     </Title>
-                    <Text type="secondary">Theo dõi các thay đổi trong hệ thống</Text>
+                    <Text type="secondary">{t('auditLog.subtitle')}</Text>
                 </div>
             </div>
 
@@ -200,7 +223,7 @@ const AuditLogPage = () => {
                 <Row gutter={[16, 16]} align="middle">
                     <Col xs={24} sm={12} md={5}>
                         <Select
-                            placeholder="Hành động"
+                            placeholder={t('auditLog.action')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.action}
@@ -218,7 +241,7 @@ const AuditLogPage = () => {
                     </Col>
                     <Col xs={24} sm={12} md={5}>
                         <Select
-                            placeholder="Loại đối tượng"
+                            placeholder={t('auditLog.entityType')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.entity_type}
@@ -234,12 +257,12 @@ const AuditLogPage = () => {
                     <Col xs={24} sm={12} md={8}>
                         <RangePicker
                             style={{ width: '100%' }}
-                            placeholder={['Từ ngày', 'Đến ngày']}
+                            placeholder={[t('auditLog.fromDate'), t('auditLog.toDate')]}
                             onChange={handleDateChange}
                         />
                     </Col>
                     <Col>
-                        <Tooltip title="Làm mới">
+                        <Tooltip title={t('common.refresh')}>
                             <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
                         </Tooltip>
                     </Col>
@@ -260,7 +283,7 @@ const AuditLogPage = () => {
                         total: pagination.total,
                         showSizeChanger: true,
                         pageSizeOptions: ['20', '50', '100'],
-                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} bản ghi`,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} ${t('common.of')} ${total}`,
                     }}
                     onChange={handleTableChange}
                 />
@@ -268,7 +291,7 @@ const AuditLogPage = () => {
 
             {/* Detail Drawer */}
             <Drawer
-                title="Chi tiết nhật ký"
+                title={t('auditLog.details')}
                 placement="right"
                 width={600}
                 open={isDrawerOpen}
@@ -277,19 +300,19 @@ const AuditLogPage = () => {
                 {selectedLog && (
                     <>
                         <Descriptions column={1} bordered size="small">
-                            <Descriptions.Item label="Thời gian">
+                            <Descriptions.Item label={t('auditLog.timestamp')}>
                                 {dayjs(selectedLog.created_at).format('DD/MM/YYYY HH:mm:ss')}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Người dùng">
+                            <Descriptions.Item label={t('auditLog.user')}>
                                 {selectedLog.user?.display_name || selectedLog.user?.username || 'System'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Hành động">
+                            <Descriptions.Item label={t('auditLog.action')}>
                                 {getActionTag(selectedLog.action)}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Đối tượng">
+                            <Descriptions.Item label={t('auditLog.entityType')}>
                                 {getEntityLabel(selectedLog.entity_type)}
                             </Descriptions.Item>
-                            <Descriptions.Item label="ID đối tượng">
+                            <Descriptions.Item label={t('auditLog.entityId')}>
                                 {selectedLog.entity_id || '-'}
                             </Descriptions.Item>
                             <Descriptions.Item label="IP Address">
@@ -304,7 +327,7 @@ const AuditLogPage = () => {
 
                         {selectedLog.old_values && (
                             <>
-                                <Title level={5} style={{ marginTop: 24 }}>Giá trị cũ</Title>
+                                <Title level={5} style={{ marginTop: 24 }}>{t('auditLog.oldValues')}</Title>
                                 <pre style={{
                                     background: '#f5f5f5',
                                     padding: 12,
@@ -320,7 +343,7 @@ const AuditLogPage = () => {
 
                         {selectedLog.new_values && (
                             <>
-                                <Title level={5} style={{ marginTop: 16 }}>Giá trị mới</Title>
+                                <Title level={5} style={{ marginTop: 16 }}>{t('auditLog.newValues')}</Title>
                                 <pre style={{
                                     background: '#f0f9ff',
                                     padding: 12,

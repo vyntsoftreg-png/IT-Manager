@@ -10,6 +10,8 @@ const auditRoutes = require('./audit');
 const searchRoutes = require('./search');
 const settingsRoutes = require('./settings');
 const pingRoutes = require('./ping');
+const taskRoutes = require('./tasks');
+const supportRoutes = require('./support');
 
 router.use('/auth', authRoutes);
 router.use('/devices', deviceRoutes);
@@ -20,6 +22,8 @@ router.use('/audit', auditRoutes);
 router.use('/search', searchRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/ping', pingRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/support', supportRoutes);
 
 // Health check
 router.get('/health', (req, res) => {
@@ -31,3 +35,4 @@ router.get('/health', (req, res) => {
 });
 
 module.exports = router;
+

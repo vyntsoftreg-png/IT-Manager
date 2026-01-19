@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Pie, Column } from '@ant-design/charts';
 import { deviceService } from '../services/deviceService';
 import { segmentService } from '../services/segmentService';
@@ -27,16 +28,22 @@ import { useAuth } from '../contexts/AuthContext';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
+import 'dayjs/locale/en';
 
 dayjs.extend(relativeTime);
-dayjs.locale('vi');
 
 const { Title, Text } = Typography;
 
 const DashboardPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
     const [currentTime, setCurrentTime] = useState(dayjs());
+
+    // Set dayjs locale based on current language
+    useEffect(() => {
+        dayjs.locale(i18n.language === 'vi' ? 'vi' : 'en');
+    }, [i18n.language]);
 
     // Update time every minute
     useEffect(() => {
@@ -157,7 +164,7 @@ const DashboardPage = () => {
                 <div style={{ fontSize: 40, opacity: 0.4, color: '#fff' }}>{icon}</div>
             </div>
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', color: '#ffffff' }}>
-                <span style={{ fontSize: 12, fontWeight: 500 }}>Xem chi tiết</span>
+                <span style={{ fontSize: 12, fontWeight: 500 }}>{t('common.view')} →</span>
                 <ArrowRightOutlined style={{ marginLeft: 4, fontSize: 10 }} />
             </div>
         </Card>
@@ -165,8 +172,8 @@ const DashboardPage = () => {
 
     // Pie chart config for IP usage
     const ipPieData = [
-        { type: 'Đang dùng', value: ipStats.in_use },
-        { type: 'Còn trống', value: ipStats.free },
+        { type: t('ipMap.usedIPs'), value: ipStats.in_use },
+        { type: t('ipMap.availableIPs'), value: ipStats.free },
     ];
 
     const pieConfig = {
@@ -208,7 +215,7 @@ const DashboardPage = () => {
     // Device table columns
     const columns = [
         {
-            title: 'Thiết bị',
+            title: t('menu.devices'),
             dataIndex: 'name',
             key: 'name',
             render: (text, record) => (
@@ -228,7 +235,7 @@ const DashboardPage = () => {
             render: (ips) => ips?.[0]?.ip_address || '-',
         },
         {
-            title: 'Trạng thái',
+            title: t('common.status'),
             dataIndex: 'status',
             key: 'status',
             render: (status) => getStatusTag(status),
@@ -261,10 +268,10 @@ const DashboardPage = () => {
             <div className="page-header" style={{ marginBottom: 24 }}>
                 <div>
                     <Title level={3} style={{ marginBottom: 0 }}>
-                        Xin chào, {user?.full_name || user?.username} 👋
+                        {t('dashboard.welcome')}, {user?.display_name || user?.username} 👋
                     </Title>
                     <Text type="secondary">
-                        {currentTime.format('dddd, DD/MM/YYYY - HH:mm')} | Tổng quan hệ thống IT
+                        {currentTime.format('dddd, DD/MM/YYYY - HH:mm')} | {t('dashboard.systemOverview')}
                     </Text>
                 </div>
             </div>
@@ -273,7 +280,7 @@ const DashboardPage = () => {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="Tổng thiết bị"
+                        title={t('dashboard.totalDevices')}
                         value={stats.total}
                         icon={<LaptopOutlined />}
                         gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
@@ -282,7 +289,7 @@ const DashboardPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="Đang hoạt động"
+                        title={t('dashboard.activeDevices')}
                         value={stats.byStatus?.find(s => s.status === 'active')?.count || 0}
                         icon={<CheckCircleOutlined />}
                         gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
@@ -291,9 +298,9 @@ const DashboardPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="IP đang dùng"
+                        title={t('dashboard.usedIPs')}
                         value={ipStats.in_use}
-                        subtitle={`/ ${ipStats.total} tổng`}
+                        subtitle={`/ ${ipStats.total} ${t('common.total').toLowerCase()}`}
                         icon={<GlobalOutlined />}
                         gradient="linear-gradient(135deg, #00b4db 0%, #0083b0 100%)"
                         onClick={() => handleNavigateIpMap({ status: 'in_use' })}
@@ -301,7 +308,7 @@ const DashboardPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="Tài khoản Admin"
+                        title={t('dashboard.totalAccounts')}
                         value={accountStats.total}
                         icon={<KeyOutlined />}
                         gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
@@ -310,7 +317,7 @@ const DashboardPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="Dải mạng"
+                        title={t('dashboard.networkSegments')}
                         value={segments.length}
                         icon={<CloudServerOutlined />}
                         gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
@@ -319,9 +326,9 @@ const DashboardPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={4}>
                     <ClickableStatCard
-                        title="Cần chú ý"
+                        title={t('common.warning')}
                         value={warningCount}
-                        subtitle="Bảo trì / Không hoạt động"
+                        subtitle={t('devices.maintenance') + ' / ' + t('devices.inactive')}
                         icon={<WarningOutlined />}
                         gradient="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"
                         onClick={() => handleNavigateDevices({ status: 'maintenance' })}
@@ -333,33 +340,33 @@ const DashboardPage = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><DatabaseOutlined /> Phân bổ IP</Space>}
+                        title={<Space><DatabaseOutlined /> {t('dashboard.ipUsage')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateIpMap()}>Xem tất cả <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateIpMap()}>{t('common.all')} <RightOutlined /></a>}
                     >
                         {ipStats.total > 0 ? (
                             <div style={{ height: 280 }}>
                                 <Pie {...pieConfig} />
                             </div>
                         ) : (
-                            <Empty description="Chưa có dữ liệu IP" />
+                            <Empty description={t('common.noData')} />
                         )}
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><DesktopOutlined /> Thiết bị theo loại</Space>}
+                        title={<Space><DesktopOutlined /> {t('dashboard.deviceTypes')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateDevices()}>Xem tất cả <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateDevices()}>{t('common.all')} <RightOutlined /></a>}
                     >
                         {deviceTypeData.length > 0 ? (
                             <div style={{ height: 280 }}>
                                 <Column {...barConfig} />
                             </div>
                         ) : (
-                            <Empty description="Chưa có dữ liệu" />
+                            <Empty description={t('common.noData')} />
                         )}
                     </Card>
                 </Col>
@@ -369,10 +376,10 @@ const DashboardPage = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><GlobalOutlined /> Dải mạng</Space>}
+                        title={<Space><GlobalOutlined /> {t('dashboard.networkSegments')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateIpMap()}>Quản lý <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateIpMap()}>{t('common.actions')} <RightOutlined /></a>}
                     >
                         {segments.length > 0 ? (
                             <div style={{ maxHeight: 300, overflow: 'auto' }}>
@@ -408,16 +415,16 @@ const DashboardPage = () => {
                                 })}
                             </div>
                         ) : (
-                            <Empty description="Chưa có dải mạng" />
+                            <Empty description={t('common.noData')} />
                         )}
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><KeyOutlined /> Tài khoản theo hệ thống</Space>}
+                        title={<Space><KeyOutlined /> {t('dashboard.accountsByType')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateAccounts()}>Quản lý <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateAccounts()}>{t('common.actions')} <RightOutlined /></a>}
                     >
                         {accountStats.bySystemType?.length > 0 ? (
                             <div className="type-stats">
@@ -444,7 +451,7 @@ const DashboardPage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <Empty description="Chưa có tài khoản" />
+                            <Empty description={t('common.noData')} />
                         )}
                     </Card>
                 </Col>
@@ -454,10 +461,10 @@ const DashboardPage = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><HistoryOutlined /> Hoạt động gần đây</Space>}
+                        title={<Space><HistoryOutlined /> {t('dashboard.recentActivity')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateAudit()}>Xem tất cả <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateAudit()}>{t('common.all')} <RightOutlined /></a>}
                     >
                         {auditLogs.length > 0 ? (
                             <Timeline
@@ -465,7 +472,7 @@ const DashboardPage = () => {
                                     dot: getActionIcon(log.action),
                                     children: (
                                         <div>
-                                            <Text strong>{log.user?.full_name || log.user?.username}</Text>
+                                            <Text strong>{log.user?.display_name || log.user?.username}</Text>
                                             <Text type="secondary"> {log.action} </Text>
                                             <Text>{log.entity_type}</Text>
                                             <div>
@@ -478,16 +485,16 @@ const DashboardPage = () => {
                                 }))}
                             />
                         ) : (
-                            <Empty description="Chưa có hoạt động" />
+                            <Empty description={t('common.noData')} />
                         )}
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><LaptopOutlined /> Thiết bị mới thêm</Space>}
+                        title={<Space><LaptopOutlined /> {t('menu.devices')}</Space>}
                         bordered={false}
                         className="dashboard-card"
-                        extra={<a onClick={() => handleNavigateDevices()}>Xem tất cả <RightOutlined /></a>}
+                        extra={<a onClick={() => handleNavigateDevices()}>{t('common.all')} <RightOutlined /></a>}
                     >
                         <Table
                             columns={columns}
@@ -500,7 +507,7 @@ const DashboardPage = () => {
                                 onClick: () => navigate(`/devices?search=${record.name}`),
                                 style: { cursor: 'pointer' },
                             })}
-                            locale={{ emptyText: <Empty description="Chưa có thiết bị" /> }}
+                            locale={{ emptyText: <Empty description={t('common.noData')} /> }}
                         />
                     </Card>
                 </Col>

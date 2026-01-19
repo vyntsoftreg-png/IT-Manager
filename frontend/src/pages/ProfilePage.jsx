@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Form, Input, Button, Typography, Space, message, Divider, Descriptions, Avatar, Row, Col } from 'antd';
 import { UserOutlined, LockOutlined, SaveOutlined, MailOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
@@ -8,6 +9,7 @@ const { Title, Text } = Typography;
 
 const ProfilePage = () => {
     const { user, refreshUser } = useAuth();
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const [passwordForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
@@ -18,11 +20,11 @@ const ProfilePage = () => {
         try {
             const response = await api.put('/auth/profile', values);
             if (response.data.success) {
-                message.success('Cập nhật thông tin thành công!');
+                message.success(t('profile.profileUpdated'));
                 if (refreshUser) refreshUser();
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || t('common.error'));
         } finally {
             setLoading(false);
         }
@@ -36,11 +38,11 @@ const ProfilePage = () => {
                 new_password: values.new_password,
             });
             if (response.data.success) {
-                message.success('Đổi mật khẩu thành công!');
+                message.success(t('profile.passwordChanged'));
                 passwordForm.resetFields();
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || t('common.error'));
         } finally {
             setPasswordLoading(false);
         }
@@ -60,8 +62,8 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
             <div className="page-header">
-                <Title level={3}>Thông tin cá nhân</Title>
-                <Text type="secondary">Quản lý thông tin tài khoản của bạn</Text>
+                <Title level={3}>{t('profile.title')}</Title>
+                <Text type="secondary">{t('profile.subtitle')}</Text>
             </div>
 
             <Row gutter={24}>
@@ -90,14 +92,14 @@ const ProfilePage = () => {
                         <Divider />
                         <Descriptions column={1} size="small">
                             <Descriptions.Item label="Username">{user?.username}</Descriptions.Item>
-                            <Descriptions.Item label="Email">{user?.email || 'Chưa có'}</Descriptions.Item>
-                            <Descriptions.Item label="Vai trò">{roleBadge.text}</Descriptions.Item>
+                            <Descriptions.Item label="Email">{user?.email || t('common.none')}</Descriptions.Item>
+                            <Descriptions.Item label={t('profile.role')}>{roleBadge.text}</Descriptions.Item>
                         </Descriptions>
                     </Card>
                 </Col>
 
                 <Col xs={24} lg={16}>
-                    <Card title="Cập nhật thông tin" bordered={false} style={{ marginBottom: 24 }}>
+                    <Card title={t('profile.updateInfo')} bordered={false} style={{ marginBottom: 24 }}>
                         <Form
                             form={form}
                             layout="vertical"
@@ -109,29 +111,29 @@ const ProfilePage = () => {
                         >
                             <Form.Item
                                 name="display_name"
-                                label="Tên hiển thị"
-                                rules={[{ required: true, message: 'Vui lòng nhập tên hiển thị' }]}
+                                label={t('profile.displayName')}
+                                rules={[{ required: true, message: t('validation.required') }]}
                             >
-                                <Input prefix={<UserOutlined />} placeholder="Tên hiển thị" />
+                                <Input prefix={<UserOutlined />} placeholder={t('profile.displayName')} />
                             </Form.Item>
 
                             <Form.Item
                                 name="email"
                                 label="Email"
-                                rules={[{ type: 'email', message: 'Email không hợp lệ' }]}
+                                rules={[{ type: 'email', message: t('validation.invalidEmail') }]}
                             >
                                 <Input prefix={<MailOutlined />} placeholder="Email" />
                             </Form.Item>
 
                             <Form.Item>
                                 <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
-                                    Lưu thay đổi
+                                    {t('profile.saveChanges')}
                                 </Button>
                             </Form.Item>
                         </Form>
                     </Card>
 
-                    <Card title="Đổi mật khẩu" bordered={false}>
+                    <Card title={t('profile.changePassword')} bordered={false}>
                         <Form
                             form={passwordForm}
                             layout="vertical"
@@ -139,45 +141,45 @@ const ProfilePage = () => {
                         >
                             <Form.Item
                                 name="current_password"
-                                label="Mật khẩu hiện tại"
-                                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
+                                label={t('profile.currentPassword')}
+                                rules={[{ required: true, message: t('validation.required') }]}
                             >
-                                <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu hiện tại" />
+                                <Input.Password prefix={<LockOutlined />} placeholder={t('profile.currentPassword')} />
                             </Form.Item>
 
                             <Form.Item
                                 name="new_password"
-                                label="Mật khẩu mới"
+                                label={t('profile.newPassword')}
                                 rules={[
-                                    { required: true, message: 'Vui lòng nhập mật khẩu mới' },
-                                    { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+                                    { required: true, message: t('validation.required') },
+                                    { min: 6, message: t('validation.minLength', { min: 6 }) },
                                 ]}
                             >
-                                <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu mới" />
+                                <Input.Password prefix={<LockOutlined />} placeholder={t('profile.newPassword')} />
                             </Form.Item>
 
                             <Form.Item
                                 name="confirm_password"
-                                label="Xác nhận mật khẩu mới"
+                                label={t('profile.confirmPassword')}
                                 dependencies={['new_password']}
                                 rules={[
-                                    { required: true, message: 'Vui lòng xác nhận mật khẩu' },
+                                    { required: true, message: t('validation.required') },
                                     ({ getFieldValue }) => ({
                                         validator(_, value) {
                                             if (!value || getFieldValue('new_password') === value) {
                                                 return Promise.resolve();
                                             }
-                                            return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                                            return Promise.reject(new Error(t('profile.passwordMismatch')));
                                         },
                                     }),
                                 ]}
                             >
-                                <Input.Password prefix={<LockOutlined />} placeholder="Xác nhận mật khẩu mới" />
+                                <Input.Password prefix={<LockOutlined />} placeholder={t('profile.confirmPassword')} />
                             </Form.Item>
 
                             <Form.Item>
                                 <Button type="primary" htmlType="submit" loading={passwordLoading} icon={<LockOutlined />}>
-                                    Đổi mật khẩu
+                                    {t('profile.changePassword')}
                                 </Button>
                             </Form.Item>
                         </Form>

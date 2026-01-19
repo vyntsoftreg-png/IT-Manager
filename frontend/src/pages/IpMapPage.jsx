@@ -12,6 +12,7 @@ import {
     PauseCircleOutlined, RadarChartOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { segmentService } from '../services/segmentService';
 import { ipService } from '../services/ipService';
 import { deviceService } from '../services/deviceService';
@@ -25,6 +26,7 @@ const { Option } = Select;
 const IpMapPage = () => {
     const { canEdit } = useAuth();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const [assignForm] = Form.useForm();
 
@@ -424,7 +426,7 @@ const IpMapPage = () => {
             render: (ip) => <Text code style={{ fontSize: 13 }}>{ip}</Text>,
         },
         {
-            title: 'Trạng thái',
+            title: t('common.status'),
             dataIndex: 'status',
             key: 'status',
             width: 120,
@@ -453,7 +455,7 @@ const IpMapPage = () => {
             },
         },
         {
-            title: 'Thiết bị',
+            title: t('devices.deviceName'),
             dataIndex: 'device',
             key: 'device',
             width: 180,
@@ -484,14 +486,14 @@ const IpMapPage = () => {
             },
         },
         {
-            title: 'Ghi chú',
+            title: t('ipMap.notes'),
             dataIndex: 'notes',
             key: 'notes',
             ellipsis: true,
             render: (text) => text || <Text type="secondary">-</Text>,
         },
         {
-            title: 'Hành động',
+            title: t('common.actions'),
             key: 'actions',
             width: 120,
             fixed: 'right',
@@ -500,7 +502,7 @@ const IpMapPage = () => {
 
                 if (record.status === 'free') {
                     return (
-                        <Tooltip title="Gán cho thiết bị">
+                        <Tooltip title={t('ipMap.assignIP')}>
                             <Button
                                 type="primary"
                                 size="small"
@@ -514,7 +516,7 @@ const IpMapPage = () => {
                 if (record.status === 'in_use' || record.status === 'reserved') {
                     return (
                         <Space size="small">
-                            <Tooltip title="Chỉnh sửa">
+                            <Tooltip title={t('common.edit')}>
                                 <Button
                                     size="small"
                                     icon={<EditOutlined />}
@@ -561,12 +563,12 @@ const IpMapPage = () => {
         <div className="ip-map-page">
             <div className="page-header">
                 <div>
-                    <Title level={3}>IP Map</Title>
-                    <Text type="secondary">Quản lý dải mạng và địa chỉ IP</Text>
+                    <Title level={3}>{t('ipMap.title')}</Title>
+                    <Text type="secondary">{t('ipMap.subtitle')}</Text>
                 </div>
                 {canEdit && (
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenSegmentModal()}>
-                        Thêm dải mạng
+                        {t('ipMap.addSegment')}
                     </Button>
                 )}
             </div>
@@ -575,11 +577,11 @@ const IpMapPage = () => {
                 {/* Segment Sidebar */}
                 <Col xs={24} lg={7} xl={6}>
                     <Card
-                        title="Dải mạng"
+                        title={t('ipMap.networkSegments')}
                         bordered={false}
                         className="segment-sidebar"
                         extra={
-                            <Tooltip title="Làm mới">
+                            <Tooltip title={t('common.refresh')}>
                                 <Button type="text" size="small" icon={<ReloadOutlined />} onClick={() => refetchSegments()} />
                             </Tooltip>
                         }
@@ -589,7 +591,7 @@ const IpMapPage = () => {
                                 <Spin />
                             </div>
                         ) : segments.length === 0 ? (
-                            <Empty description="Chưa có dải mạng" />
+                            <Empty description={t('ipMap.noSegments')} />
                         ) : (
                             <List
                                 dataSource={segments}

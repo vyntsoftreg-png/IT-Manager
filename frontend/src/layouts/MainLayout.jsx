@@ -11,10 +11,13 @@ import {
     MenuUnfoldOutlined,
     SettingOutlined,
     HistoryOutlined,
+    FileTextOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import GlobalSearch from '../components/GlobalSearch';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -25,27 +28,33 @@ const MainLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { token } = theme.useToken();
+    const { t } = useTranslation();
 
     const baseMenuItems = [
         {
             key: '/',
             icon: <DashboardOutlined />,
-            label: 'Dashboard',
+            label: t('menu.dashboard'),
         },
         {
             key: '/devices',
             icon: <LaptopOutlined />,
-            label: 'Thiết bị',
+            label: t('menu.devices'),
         },
         {
             key: '/ip-map',
             icon: <GlobalOutlined />,
-            label: 'IP Map',
+            label: t('menu.ipMap'),
         },
         {
             key: '/accounts',
             icon: <KeyOutlined />,
-            label: 'Tài khoản Admin',
+            label: t('menu.accounts'),
+        },
+        {
+            key: '/tasks',
+            icon: <FileTextOutlined />,
+            label: t('menu.tasks'),
         },
     ];
 
@@ -56,7 +65,7 @@ const MainLayout = () => {
             {
                 key: '/audit-logs',
                 icon: <HistoryOutlined />,
-                label: 'Nhật ký hoạt động',
+                label: t('menu.auditLog'),
             },
         ]
         : baseMenuItems;
@@ -65,12 +74,12 @@ const MainLayout = () => {
         {
             key: 'profile',
             icon: <UserOutlined />,
-            label: 'Thông tin cá nhân',
+            label: t('menu.profile'),
         },
         {
             key: 'settings',
             icon: <SettingOutlined />,
-            label: 'Cài đặt',
+            label: t('menu.settings'),
         },
         {
             type: 'divider',
@@ -78,7 +87,7 @@ const MainLayout = () => {
         {
             key: 'logout',
             icon: <LogoutOutlined />,
-            label: 'Đăng xuất',
+            label: t('menu.logout'),
             danger: true,
         },
     ];
@@ -141,6 +150,7 @@ const MainLayout = () => {
                     />
                     <GlobalSearch />
                     <div className="header-right">
+                        <LanguageSwitcher />
                         <Dropdown
                             menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
                             placement="bottomRight"

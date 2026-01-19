@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import { Upload } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { accountService } from '../services/accountService';
 import { deviceService } from '../services/deviceService';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,6 +48,7 @@ const systemTypeIcons = {
 const AccountsPage = () => {
     const { canEdit, isAdmin } = useAuth();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [form] = Form.useForm();
 
     // State
@@ -375,7 +377,7 @@ const AccountsPage = () => {
     // Table columns
     const columns = [
         {
-            title: 'Hệ thống',
+            title: t('accounts.systemName'),
             dataIndex: 'system_name',
             key: 'system_name',
             width: 200,
@@ -389,7 +391,7 @@ const AccountsPage = () => {
             ),
         },
         {
-            title: 'Loại',
+            title: t('common.type'),
             dataIndex: 'system_type',
             key: 'system_type',
             width: 50,
@@ -418,7 +420,7 @@ const AccountsPage = () => {
             ) : <Text type="secondary">-</Text>,
         },
         {
-            title: 'Môi trường',
+            title: t('accounts.environment'),
             dataIndex: 'environment',
             key: 'environment',
             width: 120,
@@ -430,27 +432,27 @@ const AccountsPage = () => {
             width: 80,
             render: (_, record) => (
                 record.encrypted_password ? (
-                    <Tag icon={<LockOutlined />} color="green">Có</Tag>
+                    <Tag icon={<LockOutlined />} color="green">{t('common.yes')}</Tag>
                 ) : (
                     <Text type="secondary">-</Text>
                 )
             ),
         },
         {
-            title: 'Thiết bị',
+            title: t('devices.deviceName'),
             dataIndex: 'device',
             key: 'device',
             width: 150,
             render: (device) => device ? device.name : <Text type="secondary">-</Text>,
         },
         {
-            title: 'Hành động',
+            title: t('common.actions'),
             key: 'actions',
             width: 130,
             fixed: 'right',
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Xem chi tiết">
+                    <Tooltip title={t('common.view')}>
                         <Button
                             type="text"
                             size="small"
@@ -459,7 +461,7 @@ const AccountsPage = () => {
                         />
                     </Tooltip>
                     {canEdit && (
-                        <Tooltip title="Sửa">
+                        <Tooltip title={t('common.edit')}>
                             <Button
                                 type="text"
                                 size="small"
@@ -470,14 +472,14 @@ const AccountsPage = () => {
                     )}
                     {isAdmin && (
                         <Popconfirm
-                            title="Xóa tài khoản"
-                            description="Bạn có chắc muốn xóa tài khoản này?"
+                            title={t('accounts.deleteAccount')}
+                            description={t('accounts.confirmDeleteAccount')}
                             onConfirm={() => handleDelete(record.id)}
-                            okText="Xóa"
-                            cancelText="Hủy"
+                            okText={t('common.delete')}
+                            cancelText={t('common.cancel')}
                             okButtonProps={{ danger: true }}
                         >
-                            <Tooltip title="Xóa">
+                            <Tooltip title={t('common.delete')}>
                                 <Button
                                     type="text"
                                     size="small"
@@ -496,21 +498,21 @@ const AccountsPage = () => {
         <div className="accounts-page">
             <div className="page-header">
                 <div>
-                    <Title level={3}>Tài khoản Admin</Title>
-                    <Text type="secondary">Quản lý tài khoản quản trị các hệ thống</Text>
+                    <Title level={3}>{t('accounts.title')}</Title>
+                    <Text type="secondary">{t('accounts.subtitle')}</Text>
                 </div>
                 <Space>
                     <Button icon={<DownloadOutlined />} onClick={() => setIsExportModalOpen(true)}>
-                        Xuất CSV
+                        {t('common.export')}
                     </Button>
                     {isAdmin && (
                         <Button icon={<UploadOutlined />} onClick={() => setIsImportModalOpen(true)}>
-                            Nhập CSV
+                            {t('common.import')}
                         </Button>
                     )}
                     {canEdit && (
                         <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal()}>
-                            Thêm tài khoản
+                            {t('accounts.addAccount')}
                         </Button>
                     )}
                 </Space>
@@ -521,7 +523,7 @@ const AccountsPage = () => {
                 <Row gutter={[16, 16]} align="middle">
                     <Col xs={24} sm={12} md={6}>
                         <Input.Search
-                            placeholder="Tìm hệ thống, username..."
+                            placeholder={t('accounts.searchPlaceholder')}
                             onSearch={(value) => handleFilterChange('search', value)}
                             allowClear
                             prefix={<SearchOutlined />}
@@ -529,7 +531,7 @@ const AccountsPage = () => {
                     </Col>
                     <Col xs={12} sm={6} md={4}>
                         <Select
-                            placeholder="Loại hệ thống"
+                            placeholder={t('accounts.systemType')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.system_type}
