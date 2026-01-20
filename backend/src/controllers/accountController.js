@@ -319,12 +319,49 @@ const deleteAccount = async (req, res) => {
     }
 };
 
-// Get system types dropdown
+// Get system types dropdown (from database or fallback to defaults)
 const getSystemTypes = async (req, res) => {
-    res.json({
-        success: true,
-        data: SYSTEM_TYPES,
-    });
+    try {
+        const { SystemSetting } = require('../models');
+
+        // Try to get from database first
+        const dbSystemTypes = await SystemSetting.findAll({
+            where: {
+                category: 'system_types',
+                is_active: true
+            },
+            order: [['sort_order', 'ASC'], ['label', 'ASC']],
+            attributes: ['key', 'label', 'icon', 'color', 'sort_order']
+        });
+
+        if (dbSystemTypes && dbSystemTypes.length > 0) {
+            // Map database format to expected format
+            const data = dbSystemTypes.map(item => ({
+                value: item.key,
+                label: item.label,
+                icon: item.icon || 'key',
+                color: item.color || null,
+            }));
+
+            return res.json({
+                success: true,
+                data: data,
+            });
+        }
+
+        // Fallback to hardcoded defaults if no data in database
+        res.json({
+            success: true,
+            data: SYSTEM_TYPES,
+        });
+    } catch (error) {
+        console.error('Get system types error:', error);
+        // Fallback to hardcoded on error
+        res.json({
+            success: true,
+            data: SYSTEM_TYPES,
+        });
+    }
 };
 
 // Get environments dropdown
@@ -338,6 +375,8 @@ const getEnvironments = async (req, res) => {
 // Get account statistics
 const getAccountStats = async (req, res) => {
     try {
+        const { SystemSetting } = require('../models');
+
         const totalAccounts = await AdminAccount.count();
 
         const bySystemType = await AdminAccount.findAll({
@@ -356,13 +395,23 @@ const getAccountStats = async (req, res) => {
             group: ['environment'],
         });
 
+        // Fetch system type labels from database
+        const dbSystemTypes = await SystemSetting.findAll({
+            where: { category: 'system_types', is_active: true },
+            attributes: ['key', 'label']
+        });
+        const systemTypeMap = {};
+        dbSystemTypes.forEach(t => { systemTypeMap[t.key] = t.label; });
+        // Fallback to hardcoded
+        SYSTEM_TYPES.forEach(t => { if (!systemTypeMap[t.value]) systemTypeMap[t.value] = t.label; });
+
         res.json({
             success: true,
             data: {
                 total: totalAccounts,
                 bySystemType: bySystemType.map(item => ({
                     type: item.system_type,
-                    label: SYSTEM_TYPES.find(t => t.value === item.system_type)?.label || item.system_type,
+                    label: systemTypeMap[item.system_type] || item.system_type,
                     count: parseInt(item.get('count'), 10),
                 })),
                 byEnvironment: byEnvironment.map(item => ({
@@ -524,6 +573,7 @@ const exportAccounts = async (req, res) => {
 // Import accounts from CSV
 const importAccounts = async (req, res) => {
     try {
+        const { SystemSetting } = require('../models');
         const { accounts } = req.body;
 
         if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
@@ -540,10 +590,19 @@ const importAccounts = async (req, res) => {
             deviceMap[d.name.toLowerCase()] = d.id;
         });
 
+        // Fetch valid system types from database
+        const dbSystemTypes = await SystemSetting.findAll({
+            where: { category: 'system_types', is_active: true },
+            attributes: ['key']
+        });
+
         // PHASE 1: Validate all rows first
         const validationErrors = [];
         const validAccounts = [];
-        const validTypes = SYSTEM_TYPES.map(t => t.value);
+        // Use database types first, fallback to hardcoded
+        const validTypes = dbSystemTypes.length > 0
+            ? dbSystemTypes.map(t => t.key)
+            : SYSTEM_TYPES.map(t => t.value);
         const validEnvs = ENVIRONMENTS.map(e => e.value);
 
         for (let i = 0; i < accounts.length; i++) {

@@ -21,6 +21,7 @@ import {
     Timeline,
     Avatar,
     Empty,
+    Modal,
 } from 'antd';
 import {
     PlusOutlined,
@@ -58,6 +59,9 @@ const TasksPage = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
+    const [editingTask, setEditingTask] = useState(null);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editForm] = Form.useForm();
 
     // Set dayjs locale based on current language
     useEffect(() => {
@@ -138,7 +142,19 @@ const TasksPage = () => {
     const deleteMutation = useMutation({
         mutationFn: taskService.deleteTask,
         onSuccess: async () => {
-            message.success('Đã xóa task');
+            message.success(t('tasks.deleteSuccess'));
+            await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
+        },
+    });
+
+    const updateTaskMutation = useMutation({
+        mutationFn: ({ id, data }) => taskService.updateTask(id, data),
+        onSuccess: async () => {
+            message.success(t('common.updateSuccess'));
+            setEditModalOpen(false);
+            setEditingTask(null);
+            editForm.resetFields();
             await queryClient.invalidateQueries({ queryKey: ['tasks'] });
             await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         },
@@ -282,22 +298,39 @@ const TasksPage = () => {
         },
         {
             title: t('common.actions'),
-            width: 120,
+            width: 180,
             render: (_, record) => (
-                <Space>
+                <Space size="small">
                     <Tooltip title={t('common.view')}>
                         <Button icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
                     </Tooltip>
-                    <Select
-                        value={record.status}
-                        onChange={(val) => updateStatusMutation.mutate({ id: record.id, status: val })}
-                        size="small"
-                        style={{ width: 90 }}
+                    <Tooltip title={t('common.edit')}>
+                        <Button
+                            icon={<EditOutlined />}
+                            size="small"
+                            onClick={() => {
+                                setEditingTask(record);
+                                editForm.setFieldsValue({
+                                    title: record.title,
+                                    description: record.description,
+                                    category: record.category,
+                                    priority: record.priority,
+                                    status: record.status,
+                                });
+                                setEditModalOpen(true);
+                            }}
+                        />
+                    </Tooltip>
+                    <Popconfirm
+                        title={t('tasks.confirmDelete')}
+                        onConfirm={() => deleteMutation.mutate(record.id)}
+                        okText={t('common.yes')}
+                        cancelText={t('common.no')}
                     >
-                        {Object.entries(statusConfig).map(([key, val]) => (
-                            <Select.Option key={key} value={key}>{val.label}</Select.Option>
-                        ))}
-                    </Select>
+                        <Tooltip title={t('common.delete')}>
+                            <Button icon={<DeleteOutlined />} size="small" danger />
+                        </Tooltip>
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -511,6 +544,96 @@ const TasksPage = () => {
                     </div>
                 )}
             </Drawer>
+
+            {/* Edit Task Modal */}
+            <Modal
+                title={t('tasks.editTask')}
+                open={editModalOpen}
+                onCancel={() => {
+                    setEditModalOpen(false);
+                    setEditingTask(null);
+                    editForm.resetFields();
+                }}
+                footer={null}
+                width={600}
+                destroyOnClose
+            >
+                <Form
+                    form={editForm}
+                    layout="vertical"
+                    onFinish={(values) => {
+                        updateTaskMutation.mutate({ id: editingTask?.id, data: values });
+                    }}
+                >
+                    <Form.Item
+                        name="title"
+                        label={t('tasks.taskTitle')}
+                        rules={[{ required: true, message: t('validation.required') }]}
+                    >
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="description"
+                        label={t('common.description')}
+                    >
+                        <TextArea rows={3} />
+                    </Form.Item>
+
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item name="category" label={t('tasks.category')}>
+                                <Select>
+                                    {Object.entries(categoryLabels).map(([key, label]) => (
+                                        <Select.Option key={key} value={key}>{label}</Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="priority" label={t('tasks.priority')}>
+                                <Select>
+                                    {Object.entries(priorityConfig).map(([key, val]) => (
+                                        <Select.Option key={key} value={key}>
+                                            <Tag color={val.color}>{val.label}</Tag>
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="status" label={t('tasks.status')}>
+                                <Select>
+                                    {Object.entries(statusConfig).map(([key, val]) => (
+                                        <Select.Option key={key} value={key}>
+                                            <Tag color={val.color}>{val.label}</Tag>
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                        <Space>
+                            <Button onClick={() => {
+                                setEditModalOpen(false);
+                                setEditingTask(null);
+                                editForm.resetFields();
+                            }}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={updateTaskMutation.isPending}
+                            >
+                                {t('common.update')}
+                            </Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div >
     );
 };

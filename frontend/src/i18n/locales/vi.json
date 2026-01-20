@@ -44,7 +44,11 @@
         "deselect": "Bỏ chọn",
         "of": "của",
         "on": "Bật",
-        "off": "Tắt"
+        "off": "Tắt",
+        "notes": "Ghi chú",
+        "security": "Bảo mật",
+        "update": "Cập nhật",
+        "addNew": "Thêm mới"
     },
     "menu": {
         "dashboard": "Bảng điều khiển",
@@ -99,6 +103,7 @@
         "deviceName": "Tên thiết bị",
         "deviceType": "Loại thiết bị",
         "ipAddress": "Địa chỉ IP",
+        "hostname": "Hostname",
         "macAddress": "Địa chỉ MAC",
         "serialNumber": "Số Serial",
         "manufacturer": "Nhà sản xuất",
@@ -136,7 +141,13 @@
             "router": "Router",
             "firewall": "Firewall",
             "other": "Khác"
-        }
+        },
+        "deviceDetails": "Chi tiết thiết bị",
+        "generalInfo": "Thông tin chung",
+        "notesPlaceholder": "Ghi chú thêm về thiết bị...",
+        "noIPAssigned": "Chưa có IP được gán",
+        "adminAccounts": "Tài khoản Admin",
+        "assignedUser": "Người dùng"
     },
     "ipMap": {
         "title": "Quản lý Địa chỉ IP",
@@ -168,7 +179,10 @@
         "subtitle": "Quản lý dải mạng và địa chỉ IP",
         "noSegments": "Chưa có dải mạng",
         "networkSegments": "Dải mạng",
-        "notes": "Ghi chú"
+        "notes": "Ghi chú",
+        "editIP": "Chỉnh sửa IP",
+        "selectDeviceOptional": "Chọn thiết bị (không bắt buộc)",
+        "notesPlaceholder": "Ghi chú thêm..."
     },
     "accounts": {
         "title": "Tài khoản Admin",
@@ -202,7 +216,26 @@
             "network": "Thiết bị mạng",
             "cloud": "Dịch vụ Cloud",
             "other": "Khác"
-        }
+        },
+        "selectEnvironment": "Chọn môi trường",
+        "selectSystemType": "Chọn loại hệ thống",
+        "relatedDevice": "Thiết bị liên quan",
+        "selectDeviceOptional": "Chọn thiết bị (không bắt buộc)",
+        "notesPlaceholder": "Ghi chú thêm về tài khoản...",
+        "passwordEncryptedNote": "Mật khẩu sẽ được mã hóa và ẩn mặc định",
+        "passwordPlaceholder": "Nhập mật khẩu của tài khoản admin",
+        "createdBy": "Người tạo",
+        "createdAt": "Ngày tạo",
+        "passwordDecrypted": "Mật khẩu đã giải mã",
+        "passwordEncrypted": "Mật khẩu được mã hóa. Cần xác thực để xem.",
+        "noPasswordSaved": "Không có mật khẩu được lưu",
+        "verifyToShowPassword": "Xác thực để hiện mật khẩu",
+        "verify": "Xác thực",
+        "verifyDescription": "Vui lòng nhập mật khẩu của bạn để xác thực danh tính.",
+        "enterYourPassword": "Nhập mật khẩu của bạn",
+        "exportToCSV": "Xuất tài khoản ra CSV",
+        "exportFile": "Xuất file",
+        "exportSecurityNote": "File CSV sẽ chứa mật khẩu đã giải mã. Vui lòng xác thực để tiếp tục."
     },
     "tasks": {
         "title": "Quản lý Công việc",
@@ -227,6 +260,8 @@
         "addComment": "Thêm ghi chú",
         "noComments": "Chưa có ghi chú",
         "exportReport": "Xuất báo cáo",
+        "deleteSuccess": "Đã xóa task thành công",
+        "confirmDelete": "Bạn có chắc chắn muốn xóa task này?",
         "stats": {
             "total": "Tổng",
             "open": "Mở",
@@ -344,6 +379,7 @@
         "entityId": "ID đối tượng",
         "timestamp": "Thời gian",
         "ipAddress": "Địa chỉ IP",
+        "userAgent": "User Agent",
         "oldValues": "Giá trị cũ",
         "newValues": "Giá trị mới",
         "details": "Chi tiết nhật ký",
@@ -394,6 +430,11 @@
         "invalidMAC": "Địa chỉ MAC không hợp lệ",
         "minLength": "Tối thiểu {{min}} ký tự",
         "maxLength": "Tối đa {{max}} ký tự",
-        "passwordTooWeak": "Mật khẩu quá yếu"
+        "passwordTooWeak": "Mật khẩu quá yếu",
+        "deviceNameRequired": "Vui lòng nhập tên thiết bị",
+        "deviceTypeRequired": "Vui lòng chọn loại thiết bị",
+        "systemNameRequired": "Vui lòng nhập tên hệ thống",
+        "systemTypeRequired": "Vui lòng chọn loại hệ thống",
+        "usernameRequired": "Vui lòng nhập username"
     }
 }

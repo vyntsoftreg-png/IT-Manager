@@ -636,7 +636,7 @@ const DevicesPage = () => {
 
             {/* Add/Edit Modal */}
             <Modal
-                title={editingDevice ? 'Sửa thiết bị' : 'Thêm thiết bị mới'}
+                title={editingDevice ? t('devices.editDevice') : t('devices.addDevice')}
                 open={isModalOpen}
                 onCancel={handleCloseModal}
                 footer={null}
@@ -653,8 +653,8 @@ const DevicesPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="name"
-                                label="Tên thiết bị"
-                                rules={[{ required: true, message: 'Vui lòng nhập tên thiết bị' }]}
+                                label={t('devices.deviceName')}
+                                rules={[{ required: true, message: t('validation.deviceNameRequired') }]}
                             >
                                 <Input placeholder="VD: PC-KeToan-01" />
                             </Form.Item>
@@ -662,10 +662,10 @@ const DevicesPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="type"
-                                label="Loại thiết bị"
-                                rules={[{ required: true, message: 'Vui lòng chọn loại thiết bị' }]}
+                                label={t('devices.deviceType')}
+                                rules={[{ required: true, message: t('validation.deviceTypeRequired') }]}
                             >
-                                <Select placeholder="Chọn loại">
+                                <Select placeholder={t('common.selectPlaceholder')}>
                                     {types.map((type) => (
                                         <Option key={type.value} value={type.value}>
                                             {type.icon} {type.label}
@@ -678,12 +678,12 @@ const DevicesPage = () => {
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="hostname" label="Hostname">
+                            <Form.Item name="hostname" label={t('devices.hostname')}>
                                 <Input placeholder="VD: PC-KETOAN-01" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="mac_address" label="MAC Address">
+                            <Form.Item name="mac_address" label={t('devices.macAddress')}>
                                 <Input placeholder="VD: AA:BB:CC:DD:EE:FF" />
                             </Form.Item>
                         </Col>
@@ -691,12 +691,12 @@ const DevicesPage = () => {
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="manufacturer" label="Hãng sản xuất">
+                            <Form.Item name="manufacturer" label={t('devices.manufacturer')}>
                                 <Input placeholder="VD: Dell, HP, Cisco" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="model" label="Model">
+                            <Form.Item name="model" label={t('devices.model')}>
                                 <Input placeholder="VD: OptiPlex 7080" />
                             </Form.Item>
                         </Col>
@@ -704,12 +704,12 @@ const DevicesPage = () => {
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="serial_number" label="Serial Number">
+                            <Form.Item name="serial_number" label={t('devices.serialNumber')}>
                                 <Input placeholder="VD: ABC123XYZ" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="status" label="Trạng thái">
+                            <Form.Item name="status" label={t('common.status')}>
                                 <Select>
                                     {statuses.map((status) => (
                                         <Option key={status.value} value={status.value}>
@@ -723,12 +723,12 @@ const DevicesPage = () => {
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="location" label="Vị trí">
+                            <Form.Item name="location" label={t('devices.location')}>
                                 <Input placeholder="VD: Tầng 1, Phòng IT" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="department" label="Phòng ban">
+                            <Form.Item name="department" label={t('devices.department')}>
                                 <Input placeholder="VD: Phòng Kế toán" />
                             </Form.Item>
                         </Col>
@@ -736,25 +736,25 @@ const DevicesPage = () => {
 
                     <Row gutter={16}>
                         <Col span={24}>
-                            <Form.Item name="assigned_user" label="Người sử dụng">
+                            <Form.Item name="assigned_user" label={t('devices.assignedUser')}>
                                 <Input placeholder="VD: Nguyễn Văn A" />
                             </Form.Item>
                         </Col>
                     </Row>
 
-                    <Form.Item name="notes" label="Ghi chú">
-                        <Input.TextArea rows={3} placeholder="Ghi chú thêm về thiết bị..." />
+                    <Form.Item name="notes" label={t('common.notes')}>
+                        <Input.TextArea rows={3} placeholder={t('devices.notesPlaceholder')} />
                     </Form.Item>
 
                     <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                         <Space>
-                            <Button onClick={handleCloseModal}>Hủy</Button>
+                            <Button onClick={handleCloseModal}>{t('common.cancel')}</Button>
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 loading={createMutation.isPending || updateMutation.isPending}
                             >
-                                {editingDevice ? 'Cập nhật' : 'Thêm mới'}
+                                {editingDevice ? t('common.update') : t('common.addNew')}
                             </Button>
                         </Space>
                     </Form.Item>
@@ -763,7 +763,7 @@ const DevicesPage = () => {
 
             {/* Device Detail Drawer */}
             <Drawer
-                title="Chi tiết thiết bị"
+                title={t('devices.deviceDetails')}
                 placement="right"
                 width={600}
                 onClose={() => setIsDrawerOpen(false)}
@@ -774,25 +774,25 @@ const DevicesPage = () => {
                         items={[
                             {
                                 key: 'info',
-                                label: 'Thông tin chung',
+                                label: t('devices.generalInfo'),
                                 children: (
                                     <Descriptions column={1} bordered size="small">
-                                        <Descriptions.Item label="Tên">{selectedDevice.name}</Descriptions.Item>
-                                        <Descriptions.Item label="Loại">
+                                        <Descriptions.Item label={t('common.name')}>{selectedDevice.name}</Descriptions.Item>
+                                        <Descriptions.Item label={t('common.type')}>
                                             {getTypeIcon(selectedDevice.type)} {selectedDevice.type}
                                         </Descriptions.Item>
-                                        <Descriptions.Item label="Trạng thái">
+                                        <Descriptions.Item label={t('common.status')}>
                                             {getStatusTag(selectedDevice.status)}
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Hostname">{selectedDevice.hostname || '-'}</Descriptions.Item>
                                         <Descriptions.Item label="MAC Address">{selectedDevice.mac_address || '-'}</Descriptions.Item>
-                                        <Descriptions.Item label="Hãng">{selectedDevice.manufacturer || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label={t('devices.manufacturer')}>{selectedDevice.manufacturer || '-'}</Descriptions.Item>
                                         <Descriptions.Item label="Model">{selectedDevice.model || '-'}</Descriptions.Item>
                                         <Descriptions.Item label="Serial">{selectedDevice.serial_number || '-'}</Descriptions.Item>
-                                        <Descriptions.Item label="Vị trí">{selectedDevice.location || '-'}</Descriptions.Item>
-                                        <Descriptions.Item label="Phòng ban">{selectedDevice.department || '-'}</Descriptions.Item>
-                                        <Descriptions.Item label="Người dùng">{selectedDevice.assigned_user || '-'}</Descriptions.Item>
-                                        <Descriptions.Item label="Ghi chú">{selectedDevice.notes || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label={t('devices.location')}>{selectedDevice.location || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label={t('devices.department')}>{selectedDevice.department || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label={t('devices.assignedUser')}>{selectedDevice.assigned_user || '-'}</Descriptions.Item>
+                                        <Descriptions.Item label={t('common.notes')}>{selectedDevice.notes || '-'}</Descriptions.Item>
                                     </Descriptions>
                                 ),
                             },
@@ -817,7 +817,7 @@ const DevicesPage = () => {
                                                     },
                                                     { title: 'Hostname', dataIndex: 'hostname', key: 'hostname' },
                                                     {
-                                                        title: 'Trạng thái',
+                                                        title: t('common.status'),
                                                         dataIndex: 'status',
                                                         key: 'status',
                                                         render: (status) => <Tag color="blue">{status}</Tag>,
@@ -825,14 +825,14 @@ const DevicesPage = () => {
                                                 ]}
                                             />
                                         ) : (
-                                            <Empty description="Chưa có IP được gán" />
+                                            <Empty description={t('devices.noIPAssigned')} />
                                         )}
                                     </>
                                 ),
                             },
                             {
                                 key: 'accounts',
-                                label: 'Tài khoản Admin',
+                                label: t('devices.adminAccounts'),
                                 children: (
                                     <>
                                         {selectedDevice.adminAccounts?.length > 0 ? (
@@ -842,8 +842,8 @@ const DevicesPage = () => {
                                                 size="small"
                                                 pagination={false}
                                                 columns={[
-                                                    { title: 'Tên', dataIndex: 'name', key: 'name' },
-                                                    { title: 'Hệ thống', dataIndex: 'system_type', key: 'system' },
+                                                    { title: t('common.name'), dataIndex: 'system_name', key: 'name' },
+                                                    { title: t('accounts.systemType'), dataIndex: 'system_type', key: 'system' },
                                                     { title: 'Username', dataIndex: 'username', key: 'username' },
                                                     {
                                                         title: 'Password',

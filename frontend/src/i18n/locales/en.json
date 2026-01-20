@@ -44,7 +44,11 @@
         "deselect": "Deselect",
         "of": "of",
         "on": "On",
-        "off": "Off"
+        "off": "Off",
+        "notes": "Notes",
+        "security": "Security",
+        "update": "Update",
+        "addNew": "Add New"
     },
     "menu": {
         "dashboard": "Dashboard",
@@ -100,6 +104,7 @@
         "deviceName": "Device",
         "deviceType": "Device Type",
         "ipAddress": "IP Address",
+        "hostname": "Hostname",
         "macAddress": "MAC Address",
         "serialNumber": "Serial Number",
         "manufacturer": "Manufacturer",
@@ -136,7 +141,13 @@
             "router": "Router",
             "firewall": "Firewall",
             "other": "Other"
-        }
+        },
+        "deviceDetails": "Device Details",
+        "generalInfo": "General Info",
+        "notesPlaceholder": "Additional notes about the device...",
+        "noIPAssigned": "No IP assigned",
+        "adminAccounts": "Admin Accounts",
+        "assignedUser": "Assigned User"
     },
     "ipMap": {
         "title": "IP Address Management",
@@ -168,7 +179,10 @@
         "subtitle": "Manage network segments and IP addresses",
         "noSegments": "No network segments yet",
         "networkSegments": "Network Segments",
-        "notes": "Notes"
+        "notes": "Notes",
+        "editIP": "Edit IP",
+        "selectDeviceOptional": "Select device (optional)",
+        "notesPlaceholder": "Additional notes..."
     },
     "accounts": {
         "title": "Admin Accounts",
@@ -202,7 +216,26 @@
             "network": "Network Device",
             "cloud": "Cloud Service",
             "other": "Other"
-        }
+        },
+        "selectEnvironment": "Select environment",
+        "selectSystemType": "Select system type",
+        "relatedDevice": "Related Device",
+        "selectDeviceOptional": "Select device (optional)",
+        "notesPlaceholder": "Additional notes about the account...",
+        "passwordEncryptedNote": "Password will be encrypted and hidden by default",
+        "passwordPlaceholder": "Enter the admin account password",
+        "createdBy": "Created By",
+        "createdAt": "Created At",
+        "passwordDecrypted": "Password decrypted",
+        "passwordEncrypted": "Password is encrypted. Verification required to view.",
+        "noPasswordSaved": "No password saved",
+        "verifyToShowPassword": "Verify to show password",
+        "verify": "Verify",
+        "verifyDescription": "Please enter your password to verify your identity.",
+        "enterYourPassword": "Enter your password",
+        "exportToCSV": "Export accounts to CSV",
+        "exportFile": "Export file",
+        "exportSecurityNote": "CSV file will contain decrypted passwords. Please verify to continue."
     },
     "tasks": {
         "title": "Task Management",
@@ -227,6 +260,8 @@
         "addComment": "Add Comment",
         "noComments": "No comments yet",
         "exportReport": "Export Report",
+        "deleteSuccess": "Task deleted successfully",
+        "confirmDelete": "Are you sure you want to delete this task?",
         "stats": {
             "total": "Total",
             "open": "Open",
@@ -344,6 +379,7 @@
         "entityId": "Entity ID",
         "timestamp": "Timestamp",
         "ipAddress": "IP Address",
+        "userAgent": "User Agent",
         "oldValues": "Old Values",
         "newValues": "New Values",
         "details": "Log Details",
@@ -394,6 +430,11 @@
         "invalidMAC": "Invalid MAC address",
         "minLength": "Minimum {{min}} characters required",
         "maxLength": "Maximum {{max}} characters allowed",
-        "passwordTooWeak": "Password is too weak"
+        "passwordTooWeak": "Password is too weak",
+        "deviceNameRequired": "Please enter device name",
+        "deviceTypeRequired": "Please select device type",
+        "systemNameRequired": "Please enter system name",
+        "systemTypeRequired": "Please select system type",
+        "usernameRequired": "Please enter username"
     }
 }

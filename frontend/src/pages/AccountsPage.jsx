@@ -549,7 +549,7 @@ const AccountsPage = () => {
                     </Col>
                     <Col xs={12} sm={6} md={4}>
                         <Select
-                            placeholder="Môi trường"
+                            placeholder={t('accounts.environment')}
                             allowClear
                             style={{ width: '100%' }}
                             value={filters.environment}
@@ -632,8 +632,8 @@ const AccountsPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="system_name"
-                                label="Tên hệ thống"
-                                rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+                                label={t('accounts.systemName')}
+                                rules={[{ required: true, message: t('validation.systemNameRequired') }]}
                             >
                                 <Input placeholder="VD: Firewall HQ, vCenter DC1" />
                             </Form.Item>
@@ -641,10 +641,10 @@ const AccountsPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="system_type"
-                                label="Loại hệ thống"
-                                rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
+                                label={t('accounts.systemType')}
+                                rules={[{ required: true, message: t('validation.systemTypeRequired') }]}
                             >
-                                <Select placeholder="Chọn loại hệ thống">
+                                <Select placeholder={t('accounts.selectSystemType')}>
                                     {systemTypes.map((type) => (
                                         <Option key={type.value} value={type.value}>
                                             <Space>
@@ -671,9 +671,9 @@ const AccountsPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="environment"
-                                label="Môi trường"
+                                label={t('accounts.environment')}
                             >
-                                <Select placeholder="Chọn môi trường">
+                                <Select placeholder={t('accounts.selectEnvironment')}>
                                     {environments.map((env) => (
                                         <Option key={env.value} value={env.value}>
                                             <Tag color={env.color}>{env.label}</Tag>
@@ -693,10 +693,10 @@ const AccountsPage = () => {
 
                     <Form.Item
                         name="device_id"
-                        label="Thiết bị liên quan"
+                        label={t('accounts.relatedDevice')}
                     >
                         <Select
-                            placeholder="Chọn thiết bị (không bắt buộc)"
+                            placeholder={t('accounts.selectDeviceOptional')}
                             allowClear
                             showSearch
                             filterOption={(input, option) =>
@@ -711,27 +711,27 @@ const AccountsPage = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item name="notes" label="Ghi chú">
-                        <Input.TextArea rows={2} placeholder="Ghi chú thêm về tài khoản..." />
+                    <Form.Item name="notes" label={t('common.notes')}>
+                        <Input.TextArea rows={2} placeholder={t('accounts.notesPlaceholder')} />
                     </Form.Item>
 
                     <Form.Item
                         name="password"
-                        label="Mật khẩu"
-                        extra="Mật khẩu sẽ được mã hóa và ẩn mặc định"
+                        label={t('accounts.password')}
+                        extra={t('accounts.passwordEncryptedNote')}
                     >
-                        <Input.Password placeholder="Nhập mật khẩu của tài khoản admin" />
+                        <Input.Password placeholder={t('accounts.passwordPlaceholder')} />
                     </Form.Item>
 
                     <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                         <Space>
-                            <Button onClick={handleCloseModal}>Hủy</Button>
+                            <Button onClick={handleCloseModal}>{t('common.cancel')}</Button>
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 loading={createMutation.isPending || updateMutation.isPending}
                             >
-                                {editingAccount ? 'Cập nhật' : 'Thêm mới'}
+                                {editingAccount ? t('common.update') : t('common.addNew')}
                             </Button>
                         </Space>
                     </Form.Item>
@@ -754,10 +754,10 @@ const AccountsPage = () => {
                 {viewingAccount && (
                     <>
                         <Descriptions column={1} bordered size="small">
-                            <Descriptions.Item label="Hệ thống">
+                            <Descriptions.Item label={t('accounts.systemName')}>
                                 {viewingAccount.system_name}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Loại">
+                            <Descriptions.Item label={t('common.type')}>
                                 {getSystemTypeLabel(viewingAccount.system_type)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Username">
@@ -770,38 +770,38 @@ const AccountsPage = () => {
                                     </a>
                                 ) : '-'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Môi trường">
+                            <Descriptions.Item label={t('accounts.environment')}>
                                 {getEnvironmentTag(viewingAccount.environment)}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Thiết bị">
+                            <Descriptions.Item label={t('accounts.device')}>
                                 {viewingAccount.device?.name || '-'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Người tạo">
+                            <Descriptions.Item label={t('accounts.createdBy')}>
                                 {viewingAccount.owner?.display_name || viewingAccount.owner?.username || '-'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Ngày tạo">
+                            <Descriptions.Item label={t('accounts.createdAt')}>
                                 {dayjs(viewingAccount.created_at).format('DD/MM/YYYY HH:mm')}
                             </Descriptions.Item>
-                            <Descriptions.Item label="Cập nhật lần cuối">
+                            <Descriptions.Item label={t('common.updatedAt')}>
                                 {dayjs(viewingAccount.updated_at).format('DD/MM/YYYY HH:mm')}
                             </Descriptions.Item>
                         </Descriptions>
 
                         {viewingAccount.notes && (
                             <>
-                                <Divider orientation="left">Ghi chú</Divider>
+                                <Divider orientation="left">{t('common.notes')}</Divider>
                                 <Text>{viewingAccount.notes}</Text>
                             </>
                         )}
 
                         {/* Password Section */}
-                        <Divider orientation="left">Mật khẩu</Divider>
+                        <Divider orientation="left">{t('accounts.password')}</Divider>
                         {viewingAccount.encrypted_password ? (
                             <div>
                                 {revealedPassword ? (
                                     <Space direction="vertical" style={{ width: '100%' }}>
                                         <Alert
-                                            message="Mật khẩu đã giải mã"
+                                            message={t('accounts.passwordDecrypted')}
                                             description={
                                                 <Space>
                                                     <Text code copyable={{ text: revealedPassword }}>
@@ -816,26 +816,26 @@ const AccountsPage = () => {
                                             icon={<EyeInvisibleOutlined />}
                                             onClick={() => setRevealedPassword(null)}
                                         >
-                                            Ẩn mật khẩu
+                                            {t('accounts.hidePassword')}
                                         </Button>
                                     </Space>
                                 ) : (
                                     <Space direction="vertical">
                                         <Text type="secondary">
-                                            <LockOutlined /> Mật khẩu được mã hóa. Cần xác thực để xem.
+                                            <LockOutlined /> {t('accounts.passwordEncrypted')}
                                         </Text>
                                         <Button
                                             type="primary"
                                             icon={<EyeOutlined />}
                                             onClick={() => setIsRevealModalOpen(true)}
                                         >
-                                            Hiện mật khẩu
+                                            {t('accounts.showPassword')}
                                         </Button>
                                     </Space>
                                 )}
                             </div>
                         ) : (
-                            <Text type="secondary">Không có mật khẩu được lưu</Text>
+                            <Text type="secondary">{t('accounts.noPasswordSaved')}</Text>
                         )}
                     </>
                 )}
@@ -846,7 +846,7 @@ const AccountsPage = () => {
                 title={
                     <Space>
                         <LockOutlined />
-                        Xác thực để hiện mật khẩu
+                        {t('accounts.verifyToShowPassword')}
                     </Space>
                 }
                 open={isRevealModalOpen}
@@ -855,19 +855,19 @@ const AccountsPage = () => {
                     setRevealPassword('');
                 }}
                 onOk={handleRevealPassword}
-                okText="Xác thực"
-                cancelText="Hủy"
+                okText={t('accounts.verify')}
+                cancelText={t('common.cancel')}
                 confirmLoading={revealLoading}
             >
                 <Alert
-                    message="Bảo mật"
-                    description="Vui lòng nhập mật khẩu của bạn để xác thực danh tính."
+                    message={t('common.security')}
+                    description={t('accounts.verifyDescription')}
                     type="warning"
                     showIcon
                     style={{ marginBottom: 16 }}
                 />
                 <Input.Password
-                    placeholder="Nhập mật khẩu của bạn"
+                    placeholder={t('accounts.enterYourPassword')}
                     value={revealPassword}
                     onChange={(e) => setRevealPassword(e.target.value)}
                     onPressEnter={handleRevealPassword}
@@ -879,7 +879,7 @@ const AccountsPage = () => {
                 title={
                     <Space>
                         <DownloadOutlined />
-                        Xuất tài khoản ra CSV
+                        {t('accounts.exportToCSV')}
                     </Space>
                 }
                 open={isExportModalOpen}
@@ -888,13 +888,13 @@ const AccountsPage = () => {
                     setExportPassword('');
                 }}
                 onOk={handleExport}
-                okText="Xuất file"
-                cancelText="Hủy"
+                okText={t('accounts.exportFile')}
+                cancelText={t('common.cancel')}
                 confirmLoading={exportLoading}
             >
                 <Alert
-                    message="Bảo mật"
-                    description="File CSV sẽ chứa mật khẩu đã giải mã. Vui lòng xác thực để tiếp tục."
+                    message={t('common.security')}
+                    description={t('accounts.exportSecurityNote')}
                     type="warning"
                     showIcon
                     style={{ marginBottom: 16 }}

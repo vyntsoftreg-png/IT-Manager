@@ -315,10 +315,10 @@ const AuditLogPage = () => {
                             <Descriptions.Item label={t('auditLog.entityId')}>
                                 {selectedLog.entity_id || '-'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="IP Address">
+                            <Descriptions.Item label={t('auditLog.ipAddress')}>
                                 {selectedLog.ip_address || '-'}
                             </Descriptions.Item>
-                            <Descriptions.Item label="User Agent">
+                            <Descriptions.Item label={t('auditLog.userAgent')}>
                                 <Text style={{ fontSize: 11, wordBreak: 'break-all' }}>
                                     {selectedLog.user_agent || '-'}
                                 </Text>

@@ -94,6 +94,62 @@ body.dark-theme .user-dropdown:hover {
   background-color: #2a2a2a;
 }
 
+/* Dark theme text color fixes */
+body.dark-theme .ant-table-tbody>tr>td {
+  color: var(--text-primary) !important;
+}
+
+body.dark-theme .ant-table-thead>tr>th {
+  color: var(--text-secondary) !important;
+}
+
+body.dark-theme .ant-descriptions-item-label {
+  color: var(--text-secondary) !important;
+  background-color: #1f1f1f !important;
+}
+
+body.dark-theme .ant-descriptions-item-content {
+  color: var(--text-primary) !important;
+}
+
+body.dark-theme .segment-item {
+  border-bottom-color: #303030;
+}
+
+body.dark-theme .segment-item:hover {
+  background-color: #1f1f1f;
+}
+
+body.dark-theme .ant-drawer-content {
+  background-color: #141414;
+}
+
+body.dark-theme .ant-drawer-header {
+  background-color: #1a1a1a;
+  border-bottom-color: #303030;
+}
+
+body.dark-theme .ant-drawer-title {
+  color: var(--text-primary);
+}
+
+body.dark-theme pre {
+  background-color: #1f1f1f !important;
+  color: var(--text-primary) !important;
+}
+
+body.dark-theme .ant-typography {
+  color: var(--text-primary);
+}
+
+body.dark-theme .ant-statistic-content-value {
+  color: var(--text-primary);
+}
+
+body.dark-theme .ant-empty-description {
+  color: var(--text-secondary);
+}
+
 /* ===================================
    Login Page
    =================================== */

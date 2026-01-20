@@ -869,8 +869,8 @@ const IpMapPage = () => {
             {/* Assign/Edit IP Modal */}
             <Modal
                 title={selectedIp?.status === 'in_use' || selectedIp?.status === 'reserved'
-                    ? `Chỉnh sửa IP ${selectedIp?.ip_address}`
-                    : `Gán IP ${selectedIp?.ip_address}`}
+                    ? `${t('ipMap.editIP')} ${selectedIp?.ip_address}`
+                    : `${t('ipMap.assignIP')} ${selectedIp?.ip_address}`}
                 open={isAssignModalOpen}
                 onCancel={() => {
                     setIsAssignModalOpen(false);
@@ -887,10 +887,10 @@ const IpMapPage = () => {
                 >
                     <Form.Item
                         name="device_id"
-                        label="Thiết bị"
+                        label={t('ipMap.device')}
                     >
                         <Select
-                            placeholder="Chọn thiết bị (không bắt buộc)"
+                            placeholder={t('ipMap.selectDeviceOptional')}
                             allowClear
                             showSearch
                             onChange={handleDeviceSelect}
@@ -906,27 +906,27 @@ const IpMapPage = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item name="hostname" label="Hostname">
+                    <Form.Item name="hostname" label={t('devices.hostname')}>
                         <Input placeholder="VD: PC-KETOAN-01" />
                     </Form.Item>
 
-                    <Form.Item name="mac_address" label="MAC Address">
+                    <Form.Item name="mac_address" label={t('devices.macAddress')}>
                         <Input placeholder="VD: AA:BB:CC:DD:EE:FF" />
                     </Form.Item>
 
-                    <Form.Item name="notes" label="Ghi chú">
-                        <Input.TextArea rows={2} placeholder="Ghi chú thêm..." />
+                    <Form.Item name="notes" label={t('common.notes')}>
+                        <Input.TextArea rows={2} placeholder={t('ipMap.notesPlaceholder')} />
                     </Form.Item>
 
                     <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                         <Space>
-                            <Button onClick={() => setIsAssignModalOpen(false)}>Hủy</Button>
+                            <Button onClick={() => setIsAssignModalOpen(false)}>{t('common.cancel')}</Button>
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 loading={assignIpMutation.isPending}
                             >
-                                {selectedIp?.status === 'in_use' || selectedIp?.status === 'reserved' ? 'Cập nhật' : 'Gán IP'}
+                                {selectedIp?.status === 'in_use' || selectedIp?.status === 'reserved' ? t('common.update') : t('ipMap.assignIP')}
                             </Button>
                         </Space>
                     </Form.Item>

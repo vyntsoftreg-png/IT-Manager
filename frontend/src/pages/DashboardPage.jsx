@@ -15,6 +15,8 @@ import {
     ArrowRightOutlined,
     DesktopOutlined,
     DatabaseOutlined,
+    OrderedListOutlined,
+    ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +26,7 @@ import { deviceService } from '../services/deviceService';
 import { segmentService } from '../services/segmentService';
 import { accountService } from '../services/accountService';
 import { auditService } from '../services/auditService';
+import taskService from '../services/taskService';
 import { useAuth } from '../contexts/AuthContext';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -85,6 +88,20 @@ const DashboardPage = () => {
     const segments = segmentsData?.data || [];
     const accountStats = accountStatsData?.data || { total: 0, bySystemType: [], byEnvironment: [] };
     const auditLogs = auditData?.data || [];
+
+    // Task Stats
+    const { data: taskStatsData } = useQuery({
+        queryKey: ['taskDashboardStats'],
+        queryFn: taskService.getStats,
+    });
+
+    const { data: recentTasksData } = useQuery({
+        queryKey: ['recentTasks'],
+        queryFn: () => taskService.getTasks({ limit: 5, sortBy: 'created_at', sortOrder: 'DESC' }),
+    });
+
+    const taskStats = taskStatsData?.data || { total: 0, open: 0, in_progress: 0, resolved: 0, urgent: 0 };
+    const recentTasks = recentTasksData?.data || [];
 
     // Calculate IP stats from segment.stats
     const ipStats = segments.reduce((acc, segment) => {
@@ -262,6 +279,11 @@ const DashboardPage = () => {
         navigate('/audit');
     };
 
+    const handleNavigateTasks = (filter = {}) => {
+        const params = new URLSearchParams(filter).toString();
+        navigate(`/tasks${params ? '?' + params : ''}`);
+    };
+
     return (
         <div className="dashboard-page">
             {/* Header */}
@@ -332,6 +354,46 @@ const DashboardPage = () => {
                         icon={<WarningOutlined />}
                         gradient="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"
                         onClick={() => handleNavigateDevices({ status: 'maintenance' })}
+                    />
+                </Col>
+            </Row>
+
+            {/* Row 1.5: Tasks Overview */}
+            <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('tasks.stats.total')}
+                        value={taskStats.total}
+                        icon={<OrderedListOutlined />}
+                        gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        onClick={() => handleNavigateTasks()}
+                    />
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('tasks.stats.open')}
+                        value={taskStats.open}
+                        icon={<ClockCircleOutlined />}
+                        gradient="linear-gradient(135deg, #00b4db 0%, #0083b0 100%)"
+                        onClick={() => handleNavigateTasks({ status: 'open' })}
+                    />
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('tasks.stats.in_progress')}
+                        value={taskStats.in_progress}
+                        icon={<ExclamationCircleOutlined />}
+                        gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                        onClick={() => handleNavigateTasks({ status: 'in_progress' })}
+                    />
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('tasks.stats.urgent')}
+                        value={taskStats.urgent}
+                        icon={<WarningOutlined />}
+                        gradient="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"
+                        onClick={() => handleNavigateTasks({ priority: 'urgent' })}
                     />
                 </Col>
             </Row>
