@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import TasksPage from './pages/TasksPage';
 import SupportRequestPage from './pages/SupportRequestPage';
+import BackupPage from './pages/BackupPage';
 
 import './App.css';
 
@@ -104,6 +105,7 @@ const ThemedApp = () => {
                 <Route path="audit-logs" element={<AuditLogPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="backup" element={<BackupPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -12,6 +12,7 @@ const settingsRoutes = require('./settings');
 const pingRoutes = require('./ping');
 const taskRoutes = require('./tasks');
 const supportRoutes = require('./support');
+const backupRoutes = require('./backup');
 
 router.use('/auth', authRoutes);
 router.use('/devices', deviceRoutes);
@@ -24,6 +25,7 @@ router.use('/settings', settingsRoutes);
 router.use('/ping', pingRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/support', supportRoutes);
+router.use('/backup', backupRoutes);
 
 // Health check
 router.get('/health', (req, res) => {

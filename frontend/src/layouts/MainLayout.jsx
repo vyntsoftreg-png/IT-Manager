@@ -12,6 +12,7 @@ import {
     SettingOutlined,
     HistoryOutlined,
     FileTextOutlined,
+    DatabaseOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +67,11 @@ const MainLayout = () => {
                 key: '/audit-logs',
                 icon: <HistoryOutlined />,
                 label: t('menu.auditLog'),
+            },
+            {
+                key: '/backup',
+                icon: <DatabaseOutlined />,
+                label: t('menu.backup'),
             },
         ]
         : baseMenuItems;

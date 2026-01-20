@@ -59,7 +59,8 @@
         "auditLog": "Audit Log",
         "settings": "Settings",
         "profile": "Profile",
-        "logout": "Logout"
+        "logout": "Logout",
+        "backup": "Backup"
     },
     "auth": {
         "login": "Login",
@@ -436,5 +437,35 @@
         "systemNameRequired": "Please enter system name",
         "systemTypeRequired": "Please select system type",
         "usernameRequired": "Please enter username"
+    },
+    "backup": {
+        "title": "Database Backup",
+        "description": "Export and import database for backup and migration purposes.",
+        "databaseInfo": "Database Information",
+        "totalRecords": "Total Records",
+        "exportTitle": "Export Database",
+        "exportDescription": "Download a complete backup of all database records in JSON format.",
+        "exportNote": "The exported file contains all data including devices, accounts, IP addresses, tasks, and settings.",
+        "exportButton": "Download Backup",
+        "exportSuccess": "Database exported successfully",
+        "exportFailed": "Failed to export database",
+        "importTitle": "Import Database",
+        "importDescription": "Restore database from a previously exported JSON backup file.",
+        "importWarning": "Warning: Import will overwrite existing data",
+        "importWarningDescription": "All current data will be replaced with the imported data. This action cannot be undone.",
+        "uploadText": "Click or drag file here to upload",
+        "uploadHint": "Only JSON backup files are supported",
+        "confirmImport": "Confirm Import",
+        "confirmImportButton": "Import Data",
+        "importConfirmWarning": "This will delete all existing data and replace with the imported data. Are you sure?",
+        "fileInfo": "Backup File Information",
+        "version": "Version",
+        "exportedAt": "Exported At",
+        "recordsToImport": "Records to Import",
+        "importSuccess": "Database imported successfully",
+        "importFailed": "Failed to import database",
+        "invalidFormat": "Invalid backup file format",
+        "parseError": "Failed to parse backup file",
+        "adminOnly": "This feature is only available for administrators"
     }
 }

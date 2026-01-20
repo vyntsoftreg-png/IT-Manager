@@ -59,7 +59,8 @@
         "auditLog": "Nhật ký hoạt động",
         "settings": "Cài đặt",
         "profile": "Hồ sơ",
-        "logout": "Đăng xuất"
+        "logout": "Đăng xuất",
+        "backup": "Sao lưu"
     },
     "auth": {
         "login": "Đăng nhập",
@@ -436,5 +437,35 @@
         "systemNameRequired": "Vui lòng nhập tên hệ thống",
         "systemTypeRequired": "Vui lòng chọn loại hệ thống",
         "usernameRequired": "Vui lòng nhập username"
+    },
+    "backup": {
+        "title": "Sao lưu Cơ sở dữ liệu",
+        "description": "Xuất và nhập cơ sở dữ liệu cho mục đích sao lưu và di chuyển.",
+        "databaseInfo": "Thông tin Cơ sở dữ liệu",
+        "totalRecords": "Tổng bản ghi",
+        "exportTitle": "Xuất Cơ sở dữ liệu",
+        "exportDescription": "Tải xuống bản sao lưu đầy đủ của tất cả dữ liệu ở định dạng JSON.",
+        "exportNote": "File xuất chứa tất cả dữ liệu bao gồm thiết bị, tài khoản, địa chỉ IP, công việc và cài đặt.",
+        "exportButton": "Tải bản sao lưu",
+        "exportSuccess": "Xuất cơ sở dữ liệu thành công",
+        "exportFailed": "Không thể xuất cơ sở dữ liệu",
+        "importTitle": "Nhập Cơ sở dữ liệu",
+        "importDescription": "Khôi phục cơ sở dữ liệu từ file sao lưu JSON đã xuất trước đó.",
+        "importWarning": "Cảnh báo: Nhập sẽ ghi đè dữ liệu hiện tại",
+        "importWarningDescription": "Tất cả dữ liệu hiện tại sẽ được thay thế bằng dữ liệu nhập. Hành động này không thể hoàn tác.",
+        "uploadText": "Nhấp hoặc kéo file vào đây để tải lên",
+        "uploadHint": "Chỉ hỗ trợ file sao lưu JSON",
+        "confirmImport": "Xác nhận Nhập",
+        "confirmImportButton": "Nhập dữ liệu",
+        "importConfirmWarning": "Thao tác này sẽ xóa tất cả dữ liệu hiện tại và thay thế bằng dữ liệu nhập. Bạn có chắc chắn?",
+        "fileInfo": "Thông tin File sao lưu",
+        "version": "Phiên bản",
+        "exportedAt": "Xuất lúc",
+        "recordsToImport": "Bản ghi sẽ nhập",
+        "importSuccess": "Nhập cơ sở dữ liệu thành công",
+        "importFailed": "Không thể nhập cơ sở dữ liệu",
+        "invalidFormat": "Định dạng file sao lưu không hợp lệ",
+        "parseError": "Không thể đọc file sao lưu",
+        "adminOnly": "Tính năng này chỉ dành cho quản trị viên"
     }
 }
