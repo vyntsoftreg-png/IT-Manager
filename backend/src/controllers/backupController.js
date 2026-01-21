@@ -8,6 +8,8 @@ const {
     SystemSetting,
     Task,
     TaskComment,
+    AuditLog,
+    PingHistory,
     sequelize,
 } = require('../models');
 
@@ -82,53 +84,89 @@ const importDatabase = async (req, res) => {
 
         const { tables } = importData;
 
-        // Clear existing data in reverse order of dependencies
-        await TaskComment.destroy({ where: {}, transaction });
-        await Task.destroy({ where: {}, transaction });
-        await AdminAccount.destroy({ where: {}, transaction });
-        await IpAddress.destroy({ where: {}, transaction });
-        await NetworkSegment.destroy({ where: {}, transaction });
-        await Device.destroy({ where: {}, transaction });
-        await SystemSetting.destroy({ where: {}, transaction });
-        // Keep users or handle separately based on requirements
-        // For now, we'll update existing users and create new ones
+        // Disable foreign key checks temporarily (MySQL/MariaDB)
+        const dialect = sequelize.getDialect();
+        if (dialect === 'mysql' || dialect === 'mariadb') {
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction });
+        }
+
+        // Clear existing data - use truncate where possible for speed
+        // Order matters for foreign key relationships
+        // First delete tables that have FKs to other tables
+        await AuditLog.destroy({ where: {}, transaction, force: true });
+        await PingHistory.destroy({ where: {}, transaction, force: true });
+        await TaskComment.destroy({ where: {}, transaction, force: true });
+        await Task.destroy({ where: {}, transaction, force: true });
+        await AdminAccount.destroy({ where: {}, transaction, force: true });
+        await IpAddress.destroy({ where: {}, transaction, force: true });
+        await NetworkSegment.destroy({ where: {}, transaction, force: true });
+        await Device.destroy({ where: {}, transaction, force: true });
+        await SystemSetting.destroy({ where: {}, transaction, force: true });
+        // Note: Not deleting users to preserve current login
 
         // Import data in order of dependencies
         if (tables.users?.length) {
             for (const user of tables.users) {
-                await User.upsert(user, { transaction });
+                // Remove password_hash from import to not overwrite existing passwords
+                const { password_hash, ...userData } = user;
+                await User.upsert(userData, {
+                    transaction,
+                    conflictFields: ['id']
+                });
             }
         }
 
         if (tables.systemSettings?.length) {
-            await SystemSetting.bulkCreate(tables.systemSettings, {
+            for (const setting of tables.systemSettings) {
+                await SystemSetting.upsert(setting, { transaction });
+            }
+        }
+
+        if (tables.devices?.length) {
+            await Device.bulkCreate(tables.devices, {
                 transaction,
                 ignoreDuplicates: true
             });
         }
 
-        if (tables.devices?.length) {
-            await Device.bulkCreate(tables.devices, { transaction });
-        }
-
         if (tables.networkSegments?.length) {
-            await NetworkSegment.bulkCreate(tables.networkSegments, { transaction });
+            await NetworkSegment.bulkCreate(tables.networkSegments, {
+                transaction,
+                ignoreDuplicates: true
+            });
         }
 
         if (tables.ipAddresses?.length) {
-            await IpAddress.bulkCreate(tables.ipAddresses, { transaction });
+            await IpAddress.bulkCreate(tables.ipAddresses, {
+                transaction,
+                ignoreDuplicates: true
+            });
         }
 
         if (tables.adminAccounts?.length) {
-            await AdminAccount.bulkCreate(tables.adminAccounts, { transaction });
+            await AdminAccount.bulkCreate(tables.adminAccounts, {
+                transaction,
+                ignoreDuplicates: true
+            });
         }
 
         if (tables.tasks?.length) {
-            await Task.bulkCreate(tables.tasks, { transaction });
+            await Task.bulkCreate(tables.tasks, {
+                transaction,
+                ignoreDuplicates: true
+            });
         }
 
         if (tables.taskComments?.length) {
-            await TaskComment.bulkCreate(tables.taskComments, { transaction });
+            await TaskComment.bulkCreate(tables.taskComments, {
+                transaction,
+                ignoreDuplicates: true
+            });
+        }
+
+        // Re-enable foreign key checks
+        if (dialect === 'mysql' || dialect === 'mariadb') {
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction });
         }
 
         await transaction.commit();
@@ -153,6 +191,7 @@ const importDatabase = async (req, res) => {
         res.status(500).json({ error: 'Failed to import database', message: error.message });
     }
 };
+
 
 // Get database info
 const getBackupInfo = async (req, res) => {
