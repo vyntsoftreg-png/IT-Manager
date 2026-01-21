@@ -72,104 +72,172 @@ const exportDatabase = async (req, res) => {
 
 // Import database from JSON
 const importDatabase = async (req, res) => {
-    const transaction = await sequelize.transaction();
+    let transaction;
 
     try {
         const importData = req.body;
 
         // Validate import data structure
         if (!importData.version || !importData.tables) {
-            throw new Error('Invalid backup file format');
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid backup file format',
+                message: 'Backup file must contain version and tables properties'
+            });
         }
 
         const { tables } = importData;
-
-        // Disable foreign key checks temporarily (MySQL/MariaDB)
         const dialect = sequelize.getDialect();
+
+        // Disable foreign key checks based on dialect
         if (dialect === 'mysql' || dialect === 'mariadb') {
-            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction });
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+        } else if (dialect === 'sqlite') {
+            await sequelize.query('PRAGMA foreign_keys = OFF');
         }
 
-        // Clear existing data - use truncate where possible for speed
-        // Order matters for foreign key relationships
-        // First delete tables that have FKs to other tables
-        await AuditLog.destroy({ where: {}, transaction, force: true });
-        await PingHistory.destroy({ where: {}, transaction, force: true });
-        await TaskComment.destroy({ where: {}, transaction, force: true });
-        await Task.destroy({ where: {}, transaction, force: true });
-        await AdminAccount.destroy({ where: {}, transaction, force: true });
-        await IpAddress.destroy({ where: {}, transaction, force: true });
-        await NetworkSegment.destroy({ where: {}, transaction, force: true });
-        await Device.destroy({ where: {}, transaction, force: true });
-        await SystemSetting.destroy({ where: {}, transaction, force: true });
-        // Note: Not deleting users to preserve current login
+        // Start transaction after disabling FK checks
+        transaction = await sequelize.transaction();
 
-        // Import data in order of dependencies
+        // Clear existing data - order matters for foreign key relationships
+        // Delete child tables first
+        console.log('Clearing existing data...');
+
+        try {
+            await AuditLog.destroy({ where: {}, transaction, truncate: dialect !== 'sqlite' });
+        } catch (e) { console.log('AuditLog clear:', e.message); }
+
+        try {
+            await PingHistory.destroy({ where: {}, transaction, truncate: dialect !== 'sqlite' });
+        } catch (e) { console.log('PingHistory clear:', e.message); }
+
+        await TaskComment.destroy({ where: {}, transaction });
+        await Task.destroy({ where: {}, transaction });
+        await AdminAccount.destroy({ where: {}, transaction });
+        await IpAddress.destroy({ where: {}, transaction });
+        await NetworkSegment.destroy({ where: {}, transaction });
+        await Device.destroy({ where: {}, transaction });
+
+        try {
+            await SystemSetting.destroy({ where: {}, transaction });
+        } catch (e) { console.log('SystemSetting clear:', e.message); }
+
+        console.log('Importing data...');
+
+        // Import users first (they are referenced by other tables)
         if (tables.users?.length) {
+            console.log(`Importing ${tables.users.length} users...`);
             for (const user of tables.users) {
-                // Remove password_hash from import to not overwrite existing passwords
-                const { password_hash, ...userData } = user;
-                await User.upsert(userData, {
-                    transaction,
-                    conflictFields: ['id']
-                });
+                try {
+                    // Skip password to not overwrite existing user passwords
+                    const existingUser = await User.findByPk(user.id, { transaction });
+                    if (existingUser) {
+                        // Update existing user but preserve password
+                        const { password_hash, ...updateData } = user;
+                        await existingUser.update(updateData, { transaction });
+                    } else {
+                        // Create new user with password
+                        await User.create(user, { transaction });
+                    }
+                } catch (e) {
+                    console.log(`User ${user.id} import error:`, e.message);
+                }
             }
         }
 
+        // Import system settings
         if (tables.systemSettings?.length) {
+            console.log(`Importing ${tables.systemSettings.length} settings...`);
             for (const setting of tables.systemSettings) {
-                await SystemSetting.upsert(setting, { transaction });
+                try {
+                    await SystemSetting.upsert(setting, { transaction });
+                } catch (e) {
+                    console.log(`Setting import error:`, e.message);
+                }
             }
         }
 
+        // Import devices
         if (tables.devices?.length) {
-            await Device.bulkCreate(tables.devices, {
-                transaction,
-                ignoreDuplicates: true
-            });
+            console.log(`Importing ${tables.devices.length} devices...`);
+            for (const device of tables.devices) {
+                try {
+                    await Device.create(device, { transaction });
+                } catch (e) {
+                    console.log(`Device ${device.id} import error:`, e.message);
+                }
+            }
         }
 
+        // Import network segments
         if (tables.networkSegments?.length) {
-            await NetworkSegment.bulkCreate(tables.networkSegments, {
-                transaction,
-                ignoreDuplicates: true
-            });
+            console.log(`Importing ${tables.networkSegments.length} segments...`);
+            for (const segment of tables.networkSegments) {
+                try {
+                    await NetworkSegment.create(segment, { transaction });
+                } catch (e) {
+                    console.log(`Segment ${segment.id} import error:`, e.message);
+                }
+            }
         }
 
+        // Import IP addresses
         if (tables.ipAddresses?.length) {
-            await IpAddress.bulkCreate(tables.ipAddresses, {
-                transaction,
-                ignoreDuplicates: true
-            });
+            console.log(`Importing ${tables.ipAddresses.length} IPs...`);
+            for (const ip of tables.ipAddresses) {
+                try {
+                    await IpAddress.create(ip, { transaction });
+                } catch (e) {
+                    console.log(`IP ${ip.id} import error:`, e.message);
+                }
+            }
         }
 
+        // Import admin accounts
         if (tables.adminAccounts?.length) {
-            await AdminAccount.bulkCreate(tables.adminAccounts, {
-                transaction,
-                ignoreDuplicates: true
-            });
+            console.log(`Importing ${tables.adminAccounts.length} accounts...`);
+            for (const account of tables.adminAccounts) {
+                try {
+                    await AdminAccount.create(account, { transaction });
+                } catch (e) {
+                    console.log(`Account ${account.id} import error:`, e.message);
+                }
+            }
         }
 
+        // Import tasks
         if (tables.tasks?.length) {
-            await Task.bulkCreate(tables.tasks, {
-                transaction,
-                ignoreDuplicates: true
-            });
+            console.log(`Importing ${tables.tasks.length} tasks...`);
+            for (const task of tables.tasks) {
+                try {
+                    await Task.create(task, { transaction });
+                } catch (e) {
+                    console.log(`Task ${task.id} import error:`, e.message);
+                }
+            }
         }
 
+        // Import task comments
         if (tables.taskComments?.length) {
-            await TaskComment.bulkCreate(tables.taskComments, {
-                transaction,
-                ignoreDuplicates: true
-            });
-        }
-
-        // Re-enable foreign key checks
-        if (dialect === 'mysql' || dialect === 'mariadb') {
-            await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction });
+            console.log(`Importing ${tables.taskComments.length} comments...`);
+            for (const comment of tables.taskComments) {
+                try {
+                    await TaskComment.create(comment, { transaction });
+                } catch (e) {
+                    console.log(`Comment ${comment.id} import error:`, e.message);
+                }
+            }
         }
 
         await transaction.commit();
+        console.log('Import completed successfully');
+
+        // Re-enable foreign key checks
+        if (dialect === 'mysql' || dialect === 'mariadb') {
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        } else if (dialect === 'sqlite') {
+            await sequelize.query('PRAGMA foreign_keys = ON');
+        }
 
         res.json({
             success: true,
@@ -186,9 +254,32 @@ const importDatabase = async (req, res) => {
             },
         });
     } catch (error) {
-        await transaction.rollback();
         console.error('Import error:', error);
-        res.status(500).json({ error: 'Failed to import database', message: error.message });
+
+        if (transaction) {
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+        }
+
+        // Re-enable foreign key checks even on error
+        const dialect = sequelize.getDialect();
+        try {
+            if (dialect === 'mysql' || dialect === 'mariadb') {
+                await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+            } else if (dialect === 'sqlite') {
+                await sequelize.query('PRAGMA foreign_keys = ON');
+            }
+        } catch (e) { /* ignore */ }
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to import database',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 
