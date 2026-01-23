@@ -699,16 +699,15 @@ const AccountsPage = () => {
                             placeholder={t('accounts.selectDeviceOptional')}
                             allowClear
                             showSearch
+                            optionFilterProp="label"
                             filterOption={(input, option) =>
-                                (option?.children?.toString() || '').toLowerCase().includes(input.toLowerCase())
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                             }
-                        >
-                            {devices.map((device) => (
-                                <Option key={device.id} value={device.id}>
-                                    {device.name} ({device.type})
-                                </Option>
-                            ))}
-                        </Select>
+                            options={devices.map((device) => ({
+                                value: device.id,
+                                label: `${device.name} (${device.type})`,
+                            }))}
+                        />
                     </Form.Item>
 
                     <Form.Item name="notes" label={t('common.notes')}>

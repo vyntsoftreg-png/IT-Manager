@@ -894,16 +894,15 @@ const IpMapPage = () => {
                             allowClear
                             showSearch
                             onChange={handleDeviceSelect}
+                            optionFilterProp="label"
                             filterOption={(input, option) =>
-                                option.children.toLowerCase().includes(input.toLowerCase())
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                             }
-                        >
-                            {devices.map((device) => (
-                                <Option key={device.id} value={device.id}>
-                                    {device.name} ({device.type})
-                                </Option>
-                            ))}
-                        </Select>
+                            options={devices.map((device) => ({
+                                value: device.id,
+                                label: `${device.name} (${device.type})`,
+                            }))}
+                        />
                     </Form.Item>
 
                     <Form.Item name="hostname" label={t('devices.hostname')}>
