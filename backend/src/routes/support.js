@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Task } = require('../models');
+const { emitEvent } = require('../services/socketService');
 
 // Public endpoint - no authentication required
 // Anyone can submit a support request
@@ -45,6 +46,16 @@ router.post('/request', async (req, res) => {
             priority: priority || 'medium',
             status: 'open',
         });
+
+        // Emit real-time notification
+        emitEvent('notification', {
+            type: 'info',
+            title: 'New Public Request',
+            message: `New request #${task.task_number}: ${task.title}`
+        });
+
+        // Emit task created event for refreshing lists
+        emitEvent('task:created', task);
 
         res.status(201).json({
             success: true,

@@ -13,6 +13,7 @@ import {
     HistoryOutlined,
     FileTextOutlined,
     DatabaseOutlined,
+    BookOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +57,11 @@ const MainLayout = () => {
             key: '/tasks',
             icon: <FileTextOutlined />,
             label: t('menu.tasks'),
+        },
+        {
+            key: '/wiki',
+            icon: <BookOutlined />,
+            label: t('menu.wiki') || 'Knowledge Base',
         },
     ];
 

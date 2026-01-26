@@ -6,6 +6,7 @@ import viVN from 'antd/locale/vi_VN';
 
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { SocketProvider } from './contexts/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 
@@ -21,6 +22,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
 const SupportRequestPage = lazy(() => import('./pages/SupportRequestPage'));
 const BackupPage = lazy(() => import('./pages/BackupPage'));
+const WikiPage = lazy(() => import('./pages/WikiPage'));
 
 import './App.css';
 
@@ -88,37 +90,40 @@ const ThemedApp = () => {
     <ConfigProvider theme={themeConfig} locale={viVN}>
       <AntApp>
         <AuthProvider>
-          <BrowserRouter>
-            <Suspense fallback={
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <Spin size="large" />
-              </div>
-            }>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/support" element={<SupportRequestPage />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <MainLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<DashboardPage />} />
-                  <Route path="devices" element={<DevicesPage />} />
-                  <Route path="ip-map" element={<IpMapPage />} />
-                  <Route path="accounts" element={<AccountsPage />} />
-                  <Route path="tasks" element={<TasksPage />} />
-                  <Route path="audit-logs" element={<AuditLogPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="backup" element={<BackupPage />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <SocketProvider>
+            <BrowserRouter>
+              <Suspense fallback={
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                  <Spin size="large" />
+                </div>
+              }>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/support" element={<SupportRequestPage />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <MainLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<DashboardPage />} />
+                    <Route path="devices" element={<DevicesPage />} />
+                    <Route path="ip-map" element={<IpMapPage />} />
+                    <Route path="accounts" element={<AccountsPage />} />
+                    <Route path="tasks" element={<TasksPage />} />
+                    <Route path="audit-logs" element={<AuditLogPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="backup" element={<BackupPage />} />
+                    <Route path="wiki" element={<WikiPage />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </SocketProvider>
         </AuthProvider>
       </AntApp>
     </ConfigProvider>

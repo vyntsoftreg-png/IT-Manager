@@ -7,8 +7,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
 
+const http = require('http');
 const { sequelize } = require('./models');
 const routes = require('./routes');
+const { initSocket } = require('./services/socketService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -98,7 +100,13 @@ const startServer = async () => {
             console.log('✅ Default admin created');
         }
 
-        app.listen(PORT, () => {
+        const server = http.createServer(app);
+
+        // Initialize Socket.io
+        initSocket(server);
+        console.log('🔌 Socket.io initialized');
+
+        server.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
             console.log(`📚 API available at http://localhost:${PORT}/api`);
         });

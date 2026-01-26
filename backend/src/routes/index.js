@@ -26,6 +26,7 @@ router.use('/ping', pingRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/support', supportRoutes);
 router.use('/backup', backupRoutes);
+router.use('/wiki', require('./wiki'));
 
 // Health check
 router.get('/health', (req, res) => {
@@ -34,6 +35,17 @@ router.get('/health', (req, res) => {
         message: 'IT Manager API is running',
         timestamp: new Date().toISOString(),
     });
+});
+
+const { startNetworkScan } = require('../services/scanService');
+
+// ... other routes
+
+router.post('/scan', (req, res) => {
+    const { subnet } = req.body;
+    // Basic validation
+    startNetworkScan(subnet || '192.168.1');
+    res.json({ success: true, message: 'Scan started in background' });
 });
 
 module.exports = router;

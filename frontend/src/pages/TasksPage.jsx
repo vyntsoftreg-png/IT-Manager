@@ -40,6 +40,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useSocket } from '../contexts/SocketContext';
 import taskService from '../services/taskService';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -62,6 +63,24 @@ const TasksPage = () => {
     const [editingTask, setEditingTask] = useState(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editForm] = Form.useForm();
+
+    // Socket integration
+    const { socket } = useSocket();
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleTaskCreated = () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['taskStats'] });
+        };
+
+        socket.on('task:created', handleTaskCreated);
+
+        return () => {
+            socket.off('task:created', handleTaskCreated);
+        };
+    }, [socket, queryClient]);
 
     // Set dayjs locale based on current language
     useEffect(() => {

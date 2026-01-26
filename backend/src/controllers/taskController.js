@@ -1,5 +1,6 @@
 const { Task, TaskComment, User, AuditLog } = require('../models');
 const { Op } = require('sequelize');
+const { emitEvent } = require('../services/socketService');
 
 // Get all tasks with filters and pagination
 const getTasks = async (req, res) => {
@@ -113,8 +114,19 @@ const createTask = async (req, res) => {
                 entity_id: task.id,
                 new_values: taskData,
                 ip_address: req.ip,
+                ip_address: req.ip,
             });
         }
+
+        // Emit real-time notification
+        emitEvent('notification', {
+            type: 'info',
+            title: 'New Support Request',
+            message: `New request #${task.task_number}: ${task.title}`
+        });
+
+        // Emit task created event for refreshing lists
+        emitEvent('task:created', task);
 
         res.status(201).json({
             success: true,
