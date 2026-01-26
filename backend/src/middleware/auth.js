@@ -13,7 +13,11 @@ const authenticateToken = async (req, res, next) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret');
+        const secret = process.env.JWT_SECRET || 'default-secret';
+        if (process.env.NODE_ENV === 'production' && secret === 'default-secret') {
+            console.warn('⚠️  WARNING: Using default JWT secret in production!');
+        }
+        const decoded = jwt.verify(token, secret);
 
         const user = await User.findByPk(decoded.userId);
         if (!user || !user.is_active) {

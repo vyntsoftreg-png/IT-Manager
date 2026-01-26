@@ -1,5 +1,6 @@
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, theme, App as AntApp } from 'antd';
+import { ConfigProvider, theme, App as AntApp, Spin } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import viVN from 'antd/locale/vi_VN';
 
@@ -7,17 +8,19 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import DevicesPage from './pages/DevicesPage';
-import IpMapPage from './pages/IpMapPage';
-import AccountsPage from './pages/AccountsPage';
-import AuditLogPage from './pages/AuditLogPage';
-import ProfilePage from './pages/ProfilePage';
-import SettingsPage from './pages/SettingsPage';
-import TasksPage from './pages/TasksPage';
-import SupportRequestPage from './pages/SupportRequestPage';
-import BackupPage from './pages/BackupPage';
+
+// Lazy load pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const DevicesPage = lazy(() => import('./pages/DevicesPage'));
+const IpMapPage = lazy(() => import('./pages/IpMapPage'));
+const AccountsPage = lazy(() => import('./pages/AccountsPage'));
+const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const TasksPage = lazy(() => import('./pages/TasksPage'));
+const SupportRequestPage = lazy(() => import('./pages/SupportRequestPage'));
+const BackupPage = lazy(() => import('./pages/BackupPage'));
 
 import './App.css';
 
@@ -86,29 +89,35 @@ const ThemedApp = () => {
       <AntApp>
         <AuthProvider>
           <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/support" element={<SupportRequestPage />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<DashboardPage />} />
-                <Route path="devices" element={<DevicesPage />} />
-                <Route path="ip-map" element={<IpMapPage />} />
-                <Route path="accounts" element={<AccountsPage />} />
-                <Route path="tasks" element={<TasksPage />} />
-                <Route path="audit-logs" element={<AuditLogPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="backup" element={<BackupPage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <Suspense fallback={
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <Spin size="large" />
+              </div>
+            }>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/support" element={<SupportRequestPage />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <MainLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DashboardPage />} />
+                  <Route path="devices" element={<DevicesPage />} />
+                  <Route path="ip-map" element={<IpMapPage />} />
+                  <Route path="accounts" element={<AccountsPage />} />
+                  <Route path="tasks" element={<TasksPage />} />
+                  <Route path="audit-logs" element={<AuditLogPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="backup" element={<BackupPage />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </AuthProvider>
       </AntApp>

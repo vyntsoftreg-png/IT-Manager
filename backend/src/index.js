@@ -16,7 +16,15 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 // Configure helmet for SPA - allow inline scripts needed by Vite/React
 app.use(helmet({
-    contentSecurityPolicy: false, // Disable CSP for SPA compatibility
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Vite/Dev
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "http://localhost:5173", "ws://localhost:5173"], // Vite HMR
+        },
+    },
     crossOriginEmbedderPolicy: false,
 }));
 app.use(cors({
@@ -81,13 +89,13 @@ const startServer = async () => {
             console.log('🔄 No users found, creating default admin...');
             await User.create({
                 username: 'admin',
-                email: 'admin@itmanager.local',
-                password_hash: 'admin123',
+                email: process.env.ADMIN_EMAIL || 'admin@itmanager.local',
+                password_hash: process.env.ADMIN_PASSWORD || 'admin123',
                 full_name: 'Administrator',
                 role: 'admin',
                 is_active: true,
             });
-            console.log('✅ Default admin created (admin / admin123)');
+            console.log('✅ Default admin created');
         }
 
         app.listen(PORT, () => {

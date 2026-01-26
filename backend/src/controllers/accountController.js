@@ -6,6 +6,9 @@ const { createAuditLog } = require('../middleware/audit');
 
 // Simple encryption for passwords (using AES-256-CBC)
 const ENCRYPTION_KEY_RAW = process.env.ENCRYPTION_KEY || 'itmanager-secret-key-32-chars!!';
+if (process.env.NODE_ENV === 'production' && ENCRYPTION_KEY_RAW === 'itmanager-secret-key-32-chars!!') {
+    console.warn('⚠️  WARNING: Using default ENCRYPTION_KEY in production!');
+}
 // Ensure exactly 32 bytes for AES-256
 const ENCRYPTION_KEY = Buffer.from(ENCRYPTION_KEY_RAW.padEnd(32, '0').slice(0, 32), 'utf8');
 const IV_LENGTH = 16;

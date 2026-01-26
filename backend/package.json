@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "db:init": "node src/database/init.js"
+    "db:init": "node src/database/init.js",
+    "lint": "eslint src"
   },
   "keywords": [
     "it-management",
@@ -29,6 +30,9 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.1.0",
     "nodemon": "^3.1.11"
   }
 }
