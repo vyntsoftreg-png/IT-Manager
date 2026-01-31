@@ -7,6 +7,15 @@ export const auditService = {
         return response.data;
     },
 
+    // Export audit logs
+    exportLogs: async (params = {}) => {
+        const response = await api.get('/audit/export', {
+            params,
+            responseType: 'blob', // Important for file download
+        });
+        return response.data;
+    },
+
     // Get single log detail
     getLog: async (id) => {
         const response = await api.get(`/audit/${id}`);

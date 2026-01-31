@@ -33,6 +33,7 @@ app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     credentials: true,
 }));
+app.set('trust proxy', true); // Trust proxy headers (X-Forwarded-For)
 app.use(morgan('dev'));
 app.use(express.json({ limit: '50mb' })); // Increased limit for backup imports
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));

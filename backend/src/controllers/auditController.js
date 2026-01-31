@@ -203,10 +203,154 @@ const getAuditStats = async (req, res) => {
     }
 };
 
+// Export audit logs to CSV
+const exportAuditLogs = async (req, res) => {
+    try {
+        const {
+            action,
+            entity_type,
+            user_id,
+            start_date,
+            end_date,
+            search,
+        } = req.query;
+
+        const where = {};
+
+        if (action) where.action = action;
+        if (entity_type) where.entity_type = entity_type;
+        if (user_id) where.user_id = user_id;
+
+        if (start_date || end_date) {
+            where.created_at = {};
+            if (start_date) where.created_at[Op.gte] = new Date(start_date);
+            if (end_date) where.created_at[Op.lte] = new Date(end_date);
+        }
+
+        if (search) {
+            where[Op.or] = [
+                { entity_type: { [Op.like]: `%${search}%` } },
+                { ip_address: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const logs = await AuditLog.findAll({
+            where,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['username', 'display_name'],
+                },
+            ],
+            order: [['created_at', 'DESC']],
+        });
+
+        // Helper to format changes
+        const formatDetails = (log) => {
+            try {
+                const oldObj = log.old_values ? JSON.parse(log.old_values) : {};
+                const newObj = log.new_values ? JSON.parse(log.new_values) : {};
+
+                if (log.action === 'create') {
+                    const name = newObj.name || newObj.title || newObj.username || log.entity_id;
+                    return `Created new item: ${name}`;
+                }
+
+                if (log.action === 'delete') {
+                    const name = oldObj.name || oldObj.title || oldObj.username || log.entity_id;
+                    return `Deleted item: ${name}`;
+                }
+
+                if (log.action === 'update') {
+                    const changes = [];
+                    Object.keys(newObj).forEach(key => {
+                        if (['updated_at', 'created_at', 'password', 'encrypted_password', 'last_login'].includes(key)) return;
+
+                        // Simple comparison
+                        const oldVal = oldObj[key];
+                        const newVal = newObj[key];
+
+                        if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                            changes.push(`${key}: ${oldVal} -> ${newVal}`);
+                        }
+                    });
+                    return changes.length > 0 ? changes.join('; ') : 'Updated record';
+                }
+
+                if (['login', 'logout'].includes(log.action)) {
+                    return `${log.action === 'login' ? 'Logged in' : 'Logged out'} from IP ${log.ip_address}`;
+                }
+
+                return '';
+            } catch (e) {
+                return 'Error parsing details';
+            }
+        };
+
+        // Convert to CSV
+        // Using semi-colon separator for Excel compatibility in some regions, or standard comma. 
+        // Standard CSV uses comma.
+        const fields = ['Time', 'User', 'Action', 'Entity Type', 'Entity ID', 'IP Address', 'Description'];
+        const csvRows = [fields.join(',')];
+
+        logs.forEach(log => {
+            // Fix date format manually
+            let dateStr = '';
+            try {
+                // Check both snake_case and camelCase (Sequelize default)
+                const dateVal = log.created_at || log.createdAt;
+                const d = new Date(dateVal);
+
+                if (!isNaN(d.getTime())) {
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const min = String(d.getMinutes()).padStart(2, '0');
+                    const ss = String(d.getSeconds()).padStart(2, '0');
+                    dateStr = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+                } else {
+                    dateStr = dateVal ? String(dateVal) : '';
+                }
+            } catch (e) {
+                dateStr = '';
+            }
+
+            const details = formatDetails(log).replace(/"/g, '""'); // Escape quotes
+
+            const row = [
+                `"${dateStr}"`,
+                `"${log.user?.display_name || log.user?.username || 'System'}"`,
+                `"${log.action}"`,
+                `"${log.entity_type}"`,
+                `"${log.entity_id || ''}"`,
+                `"${log.ip_address || ''}"`,
+                `"${details}"`,
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        // Add BOM for Excel UTF-8 compatibility
+        const bom = '\uFEFF';
+        res.header('Content-Type', 'text/csv; charset=utf-8');
+        res.header('Content-Disposition', `attachment; filename=audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+        res.send(bom + csvRows.join('\n'));
+
+    } catch (error) {
+        console.error('Export audit logs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to export audit logs',
+        });
+    }
+};
+
 module.exports = {
     getAuditLogs,
     getAuditLog,
     getActions,
     getEntityTypes,
     getAuditStats,
+    exportAuditLogs,
 };

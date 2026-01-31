@@ -3,24 +3,49 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #050510;
+  /* Deep Space Black */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Futuristic Background Grid */
+  --grid-color: rgba(0, 243, 255, 0.05);
+  --grid-size: 40px;
+
+  /* Neon Palette */
+  --neon-cyan: #00f3ff;
+  --neon-blue: #0066ff;
+  --neon-purple: #764ba2;
+  --neon-pink: #f5576c;
+  --neon-orange: #ff9a9e;
+  --neon-green: #0aff00;
+  --neon-red: #ff0844;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Dashboard Chart Cards - Top Border Only */
+.dashboard-card {
+  background: rgba(20, 20, 30, 0.6) !important;
+  backdrop-filter: blur(10px);
+  border: none !important;
+  border-top: 1px solid var(--neon-cyan) !important;
+  border-radius: 0 0 8px 8px !important;
+  box-shadow: 0 -5px 15px rgba(0, 243, 255, 0.1) !important;
+  /* Upward Glow */
 }
-a:hover {
-  color: #535bf2;
+
+.dashboard-card .ant-card-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  min-height: 48px;
 }
+
+.dashboard-card .ant-card-head-title {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 
 body {
   margin: 0;
@@ -28,6 +53,14 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #050510;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.05) 0%, transparent 50%);
+  background-size: var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size), 100% 100%;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 h1 {
@@ -46,9 +79,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -59,9 +94,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }

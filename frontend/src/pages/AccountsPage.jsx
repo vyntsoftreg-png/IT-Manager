@@ -779,10 +779,10 @@ const AccountsPage = () => {
                                 {viewingAccount.owner?.display_name || viewingAccount.owner?.username || '-'}
                             </Descriptions.Item>
                             <Descriptions.Item label={t('accounts.createdAt')}>
-                                {dayjs(viewingAccount.created_at).format('DD/MM/YYYY HH:mm')}
+                                {dayjs(viewingAccount.createdAt).format('DD/MM/YYYY HH:mm')}
                             </Descriptions.Item>
                             <Descriptions.Item label={t('common.updatedAt')}>
-                                {dayjs(viewingAccount.updated_at).format('DD/MM/YYYY HH:mm')}
+                                {dayjs(viewingAccount.updatedAt).format('DD/MM/YYYY HH:mm')}
                             </Descriptions.Item>
                         </Descriptions>
 

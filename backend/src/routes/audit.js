@@ -13,6 +13,7 @@ router.get('/entity-types', auditController.getEntityTypes);
 router.get('/stats', auditController.getAuditStats);
 
 // Get logs
+router.get('/export', auditController.exportAuditLogs);
 router.get('/', auditController.getAuditLogs);
 router.get('/:id', auditController.getAuditLog);
 

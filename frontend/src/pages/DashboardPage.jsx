@@ -155,36 +155,41 @@ const DashboardPage = () => {
     };
 
     // Clickable stat card - navigates with filter
-    const ClickableStatCard = ({ title, value, icon, gradient, onClick, subtitle }) => (
+    const ClickableStatCard = ({ title, value, icon, color, onClick, subtitle }) => (
         <Card
             className="stat-card-clickable"
             bordered={false}
             onClick={onClick}
             style={{
-                background: gradient,
+                background: 'rgba(20, 20, 30, 0.6)', // Dark Glass
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                borderTop: `1px solid ${color}`, // Top Border Only
+                boxShadow: `0 -5px 15px ${color}1a`, // Top Glow Only (10% opacity)
                 cursor: 'pointer',
-                borderRadius: 16,
+                borderRadius: '0 0 8px 8px',
                 overflow: 'hidden',
-                transition: 'transform 0.2s, box-shadow 0.2s',
+                transition: 'all 0.3s ease',
                 height: '100%',
                 minHeight: 140,
             }}
-            bodyStyle={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+            bodyStyle={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 20 }}
             hoverable
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <div style={{ color: '#ffffff', fontSize: 14, fontWeight: 500, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>{title}</div>
-                    <div style={{ fontSize: 36, fontWeight: 700, color: '#ffffff', marginTop: 4, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{value}</div>
-                    <div style={{ color: '#ffffff', fontSize: 12, opacity: 0.9, minHeight: 18 }}>{subtitle || ''}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>{title}</div>
+                    <div style={{ fontSize: 38, fontWeight: 700, color: '#fff', marginTop: 8, textShadow: `0 0 10px ${color}` }}>{value}</div>
+                    <div style={{ color: color, fontSize: 12, marginTop: 4 }}>{subtitle || ''}</div>
                 </div>
-                <div style={{ fontSize: 40, opacity: 0.4, color: '#fff' }}>{icon}</div>
+                {/* Icon with Reflection/Glow, removed drop-shadow on icon to clean up */}
+                <div style={{ fontSize: 42, color: color, opacity: 0.8 }}>{icon}</div>
             </div>
-            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', color: '#ffffff' }}>
-                <span style={{ fontSize: 12, fontWeight: 500 }}>{t('common.view')} →</span>
-                <ArrowRightOutlined style={{ marginLeft: 4, fontSize: 10 }} />
+            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+                <span style={{ transition: 'color 0.2s' }}>{t('common.view')}</span>
+                <ArrowRightOutlined style={{ marginLeft: 6, fontSize: 10 }} />
             </div>
-        </Card>
+        </Card >
     );
 
     // Pie chart config for IP usage
@@ -276,7 +281,7 @@ const DashboardPage = () => {
     };
 
     const handleNavigateAudit = () => {
-        navigate('/audit');
+        navigate('/audit-logs');
     };
 
     const handleNavigateTasks = (filter = {}) => {
@@ -298,93 +303,66 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* Row 1: Main Stats - 6 Cards */}
+            {/* Row 1: Infrastructure & Accounts (4 Columns) */}
             <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} lg={4}>
+                <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
                         title={t('dashboard.totalDevices')}
                         value={stats.total}
                         icon={<LaptopOutlined />}
-                        gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        color="#764ba2" // Purple
                         onClick={() => handleNavigateDevices()}
                     />
                 </Col>
-                <Col xs={24} sm={12} lg={4}>
+                <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
                         title={t('dashboard.activeDevices')}
                         value={stats.byStatus?.find(s => s.status === 'active')?.count || 0}
                         icon={<CheckCircleOutlined />}
-                        gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
+                        color="#00f3ff" // Cyan
                         onClick={() => handleNavigateDevices({ status: 'active' })}
                     />
                 </Col>
-                <Col xs={24} sm={12} lg={4}>
-                    <ClickableStatCard
-                        title={t('dashboard.usedIPs')}
-                        value={ipStats.in_use}
-                        subtitle={`/ ${ipStats.total} ${t('common.total').toLowerCase()}`}
-                        icon={<GlobalOutlined />}
-                        gradient="linear-gradient(135deg, #00b4db 0%, #0083b0 100%)"
-                        onClick={() => handleNavigateIpMap({ status: 'in_use' })}
-                    />
-                </Col>
-                <Col xs={24} sm={12} lg={4}>
+                <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
                         title={t('dashboard.totalAccounts')}
                         value={accountStats.total}
                         icon={<KeyOutlined />}
-                        gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                        color="#f5576c" // Pink/Red
                         onClick={() => handleNavigateAccounts()}
                     />
                 </Col>
-                <Col xs={24} sm={12} lg={4}>
-                    <ClickableStatCard
-                        title={t('dashboard.networkSegments')}
-                        value={segments.length}
-                        icon={<CloudServerOutlined />}
-                        gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                        onClick={() => handleNavigateIpMap()}
-                    />
-                </Col>
-                <Col xs={24} sm={12} lg={4}>
+                <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
                         title={t('common.warning')}
                         value={warningCount}
-                        subtitle={t('devices.maintenance') + ' / ' + t('devices.inactive')}
+                        subtitle={`${maintenanceCount} Maint / ${inactiveCount} Inactive`}
                         icon={<WarningOutlined />}
-                        gradient="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"
+                        color="#ff9a9e" // Orange/Peach
                         onClick={() => handleNavigateDevices({ status: 'maintenance' })}
                     />
                 </Col>
             </Row>
 
-            {/* Row 1.5: Tasks Overview */}
+            {/* Row 2: Network & Workload (4 Columns) */}
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
-                        title={t('tasks.stats.total')}
-                        value={taskStats.total}
-                        icon={<OrderedListOutlined />}
-                        gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                        onClick={() => handleNavigateTasks()}
+                        title={t('dashboard.usedIPs')}
+                        value={ipStats.in_use}
+                        subtitle={`/ ${ipStats.total} Total`}
+                        icon={<GlobalOutlined />}
+                        color="#0066ff" // Blue
+                        onClick={() => handleNavigateIpMap({ status: 'in_use' })}
                     />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <ClickableStatCard
-                        title={t('tasks.stats.open')}
-                        value={taskStats.open}
-                        icon={<ClockCircleOutlined />}
-                        gradient="linear-gradient(135deg, #00b4db 0%, #0083b0 100%)"
-                        onClick={() => handleNavigateTasks({ status: 'open' })}
-                    />
-                </Col>
-                <Col xs={24} sm={12} lg={6}>
-                    <ClickableStatCard
-                        title={t('tasks.stats.in_progress')}
-                        value={taskStats.in_progress}
-                        icon={<ExclamationCircleOutlined />}
-                        gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-                        onClick={() => handleNavigateTasks({ status: 'in_progress' })}
+                        title={t('dashboard.networkSegments')}
+                        value={segments.length}
+                        icon={<CloudServerOutlined />}
+                        color="#00f2fe" // Light Blue
+                        onClick={() => handleNavigateIpMap()}
                     />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
@@ -392,8 +370,18 @@ const DashboardPage = () => {
                         title={t('tasks.stats.urgent')}
                         value={taskStats.urgent}
                         icon={<WarningOutlined />}
-                        gradient="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"
+                        color="#ff0844" // Deep Red
                         onClick={() => handleNavigateTasks({ priority: 'urgent' })}
+                    />
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('tasks.stats.total')}
+                        value={taskStats.total}
+                        subtitle={`${taskStats.open} Open / ${taskStats.in_progress} Pending`}
+                        icon={<OrderedListOutlined />}
+                        color="#a18cd1" // Lavender
+                        onClick={() => handleNavigateTasks()}
                     />
                 </Col>
             </Row>
@@ -523,7 +511,14 @@ const DashboardPage = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={12}>
                     <Card
-                        title={<Space><HistoryOutlined /> {t('dashboard.recentActivity')}</Space>}
+                        title={
+                            <Space
+                                style={{ cursor: 'pointer' }}
+                                onClick={handleNavigateAudit}
+                            >
+                                <HistoryOutlined /> {t('dashboard.recentActivity')}
+                            </Space>
+                        }
                         bordered={false}
                         className="dashboard-card"
                         extra={<a onClick={() => handleNavigateAudit()}>{t('common.all')} <RightOutlined /></a>}
@@ -539,7 +534,7 @@ const DashboardPage = () => {
                                             <Text>{log.entity_type}</Text>
                                             <div>
                                                 <Text type="secondary" style={{ fontSize: 12 }}>
-                                                    {dayjs(log.created_at).fromNow()}
+                                                    {dayjs(log.createdAt).fromNow()}
                                                 </Text>
                                             </div>
                                         </div>

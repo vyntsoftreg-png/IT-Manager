@@ -9,7 +9,7 @@ const createAuditLog = async (userId, action, entityType, entityId, oldValues, n
             entity_id: entityId,
             old_values: oldValues ? JSON.stringify(oldValues) : null,
             new_values: newValues ? JSON.stringify(newValues) : null,
-            ip_address: req?.ip || req?.connection?.remoteAddress,
+            ip_address: (req?.ip || req?.connection?.remoteAddress || '').replace('::ffff:', ''),
             user_agent: req?.headers?.['user-agent'],
         });
     } catch (error) {

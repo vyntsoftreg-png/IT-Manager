@@ -57,6 +57,7 @@ const TasksPage = () => {
     const { t, i18n } = useTranslation();
     const [filters, setFilters] = useState({});
     const [pagination, setPagination] = useState({ current: 1, pageSize: 20 });
+    const [deletedIds, setDeletedIds] = useState(new Set()); // Instant visual delete state
     const [selectedTask, setSelectedTask] = useState(null);
     const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
@@ -75,10 +76,17 @@ const TasksPage = () => {
             queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         };
 
+        const handleTaskDeleted = () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['taskStats'] });
+        };
+
         socket.on('task:created', handleTaskCreated);
+        socket.on('task:deleted', handleTaskDeleted);
 
         return () => {
             socket.off('task:created', handleTaskCreated);
+            socket.off('task:deleted', handleTaskDeleted);
         };
     }, [socket, queryClient]);
 
@@ -162,8 +170,11 @@ const TasksPage = () => {
         mutationFn: taskService.deleteTask,
         onSuccess: async () => {
             message.success(t('tasks.deleteSuccess'));
-            await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            // Forcefully reset the query to ensure fresh fetch
+            await queryClient.resetQueries({ queryKey: ['tasks'] });
             await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
+            // Explicitly call refetch as a second guarantee
+            refetch();
         },
     });
 
@@ -307,7 +318,7 @@ const TasksPage = () => {
         },
         {
             title: t('common.createdAt'),
-            dataIndex: 'created_at',
+            dataIndex: 'createdAt',
             width: 100,
             render: (date) => (
                 <Tooltip title={dayjs(date).format('DD/MM/YYYY HH:mm')}>
@@ -342,7 +353,16 @@ const TasksPage = () => {
                     </Tooltip>
                     <Popconfirm
                         title={t('tasks.confirmDelete')}
-                        onConfirm={() => deleteMutation.mutate(record.id)}
+                        onConfirm={() => {
+                            // 1. Visual Delete (Instant)
+                            setDeletedIds(prev => {
+                                const newSet = new Set(prev);
+                                newSet.add(record.id);
+                                return newSet;
+                            });
+                            // 2. Server Delete (Background)
+                            deleteMutation.mutate(record.id);
+                        }}
                         okText={t('common.yes')}
                         cancelText={t('common.no')}
                     >
@@ -356,6 +376,9 @@ const TasksPage = () => {
     ];
 
     const stats = statsData?.data || {};
+
+    // Filter out locally deleted items
+    const visibleTasks = (tasksData?.data || []).filter(item => !deletedIds.has(item.id));
 
     return (
         <div style={{ padding: 24 }}>
@@ -464,12 +487,12 @@ const TasksPage = () => {
             <Card>
                 <Table
                     columns={columns}
-                    dataSource={tasksData?.data || []}
+                    dataSource={visibleTasks}
                     rowKey="id"
                     loading={isLoading}
                     pagination={{
                         ...pagination,
-                        total: tasksData?.pagination?.total,
+                        total: (tasksData?.pagination?.total || 0) - deletedIds.size, // Adjust total count visual
                         showSizeChanger: true,
                         showTotal: (total) => `${t('common.total')}: ${total}`,
                     }}
@@ -528,7 +551,7 @@ const TasksPage = () => {
                                                 <div>
                                                     <Text strong>{comment.user?.display_name || 'IT'}</Text>
                                                     <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                                                        {dayjs(comment.created_at).fromNow()}
+                                                        {dayjs(comment.createdAt).fromNow()}
                                                     </Text>
                                                 </div>
                                                 <div>{comment.content}</div>

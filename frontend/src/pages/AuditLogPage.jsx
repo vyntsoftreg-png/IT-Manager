@@ -6,7 +6,7 @@ import {
 import {
     ReloadOutlined, EyeOutlined, UserOutlined, HistoryOutlined,
     PlusCircleOutlined, EditOutlined, DeleteOutlined, LoginOutlined,
-    LogoutOutlined, KeyOutlined, ImportOutlined,
+    LogoutOutlined, KeyOutlined, ImportOutlined, ExportOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -134,8 +134,8 @@ const AuditLogPage = () => {
     const columns = [
         {
             title: t('auditLog.timestamp'),
-            dataIndex: 'created_at',
-            key: 'created_at',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
             width: 160,
             render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm:ss'),
         },
@@ -262,9 +262,36 @@ const AuditLogPage = () => {
                         />
                     </Col>
                     <Col>
-                        <Tooltip title={t('common.refresh')}>
-                            <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
-                        </Tooltip>
+                        <Space>
+                            <Tooltip title={t('common.export')}>
+                                <Button
+                                    icon={<ExportOutlined />}
+                                    onClick={async () => {
+                                        try {
+                                            message.loading({ content: t('common.loading'), key: 'export' });
+                                            const blob = await auditService.exportLogs(filters);
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `audit_logs_${dayjs().format('YYYY-MM-DD_HH-mm')}.csv`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            window.URL.revokeObjectURL(url);
+                                            document.body.removeChild(a);
+                                            message.success({ content: t('common.success'), key: 'export' });
+                                        } catch (error) {
+                                            console.error('Export failed:', error);
+                                            message.error({ content: t('common.error'), key: 'export' });
+                                        }
+                                    }}
+                                >
+                                    {t('common.export')}
+                                </Button>
+                            </Tooltip>
+                            <Tooltip title={t('common.refresh')}>
+                                <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
+                            </Tooltip>
+                        </Space>
                     </Col>
                 </Row>
             </Card>
@@ -301,7 +328,7 @@ const AuditLogPage = () => {
                     <>
                         <Descriptions column={1} bordered size="small">
                             <Descriptions.Item label={t('auditLog.timestamp')}>
-                                {dayjs(selectedLog.created_at).format('DD/MM/YYYY HH:mm:ss')}
+                                {dayjs(selectedLog.createdAt).format('DD/MM/YYYY HH:mm:ss')}
                             </Descriptions.Item>
                             <Descriptions.Item label={t('auditLog.user')}>
                                 {selectedLog.user?.display_name || selectedLog.user?.username || 'System'}

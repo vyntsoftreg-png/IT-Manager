@@ -194,6 +194,9 @@ const deleteTask = async (req, res) => {
             ip_address: req.ip,
         });
 
+        // Emit deleted event
+        emitEvent('task:deleted', { id: task.id, task_number: task.task_number });
+
         res.json({ success: true, message: 'Task deleted' });
     } catch (error) {
         console.error('Delete task error:', error);
