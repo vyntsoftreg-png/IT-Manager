@@ -24,10 +24,12 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Vite/Dev
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "http://localhost:5173", "ws://localhost:5173"], // Vite HMR
+            connectSrc: ["'self'", "http://localhost:5173", "ws://localhost:5173", "http:", "ws:"], // Allow insecure connections
+            upgradeInsecureRequests: null, // Disable auto-upgrade to HTTPS
         },
     },
     crossOriginEmbedderPolicy: false,
+    strictTransportSecurity: false, // Disable HSTS to prevent forced HTTPS
 }));
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
