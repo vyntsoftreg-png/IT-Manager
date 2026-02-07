@@ -14,6 +14,7 @@ import {
     FileTextOutlined,
     DatabaseOutlined,
     BookOutlined,
+    CheckSquareOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +58,11 @@ const MainLayout = () => {
             key: '/tasks',
             icon: <FileTextOutlined />,
             label: t('menu.tasks'),
+        },
+        {
+            key: '/personal-tasks',
+            icon: <CheckSquareOutlined />,
+            label: t('menu.personalTasks') || 'Việc của tôi',
         },
         {
             key: '/wiki',

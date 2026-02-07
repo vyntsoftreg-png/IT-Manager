@@ -56,6 +56,8 @@
         "ipMap": "IP Map",
         "accounts": "Tài khoản Admin",
         "tasks": "Công việc",
+        "personalTasks": "Việc của tôi",
+        "wiki": "Cơ sở kiến thức",
         "auditLog": "Nhật ký hoạt động",
         "settings": "Cài đặt",
         "profile": "Hồ sơ",
@@ -467,5 +469,100 @@
         "invalidFormat": "Định dạng file sao lưu không hợp lệ",
         "parseError": "Không thể đọc file sao lưu",
         "adminOnly": "Tính năng này chỉ dành cho quản trị viên"
+    },
+    "personalTasks": {
+        "title": "Việc của tôi",
+        "subtitle": "Quản lý công việc cá nhân hàng ngày",
+        "addTask": "Thêm Task",
+        "editTask": "Sửa Task",
+        "categories": "Danh mục",
+        "addCategory": "Thêm Danh mục",
+        "editCategory": "Sửa Danh mục",
+        "noTasks": "Chưa có task nào",
+        "task": "Task",
+        "description": "Mô tả",
+        "category": "Danh mục",
+        "priority": "Mức độ ưu tiên",
+        "status": "Trạng thái",
+        "dueDate": "Deadline",
+        "recurring": "Lặp lại",
+        "recurringSettings": "Cài đặt lặp lại",
+        "recurringType": "Loại lặp lại",
+        "recurringEndDate": "Kết thúc lặp lại",
+        "complete": "Hoàn thành",
+        "confirmDelete": "Xóa task này?",
+        "existingCategories": "Danh mục hiện có:",
+        "priorities": {
+            "low": "Thấp",
+            "medium": "Trung bình",
+            "high": "Cao"
+        },
+        "statuses": {
+            "pending": "Chờ xử lý",
+            "in_progress": "Đang làm",
+            "completed": "Hoàn thành"
+        },
+        "recurringTypes": {
+            "none": "Không lặp",
+            "daily": "Hàng ngày",
+            "weekly": "Hàng tuần",
+            "monthly": "Hàng tháng"
+        },
+        "stats": {
+            "total": "Tổng cộng",
+            "pending": "Chờ xử lý",
+            "completed": "Hoàn thành",
+            "overdue": "Quá hạn"
+        },
+        "messages": {
+            "createSuccess": "Tạo task thành công!",
+            "updateSuccess": "Cập nhật task thành công!",
+            "deleteSuccess": "Xóa task thành công!",
+            "statusUpdated": "Cập nhật trạng thái thành công!",
+            "categoryCreated": "Tạo danh mục thành công!",
+            "categoryUpdated": "Cập nhật danh mục thành công!",
+            "categoryDeleted": "Xóa danh mục thành công!"
+        }
+    },
+    "telegram": {
+        "title": "Cài đặt Telegram",
+        "personalSettings": "Cài đặt cá nhân",
+        "adminSettings": "Telegram Bot (Admin)",
+        "chatIdLabel": "Telegram Chat ID",
+        "botTokenLabel": "Bot Token",
+        "save": "Lưu",
+        "saveAndTest": "Lưu & Test",
+        "sendTest": "Gửi tin nhắn test",
+        "configured": "Đã cấu hình",
+        "notConfigured": "Chưa cấu hình",
+        "howToGetChatId": "Cách lấy Chat ID",
+        "howToCreateBot": "Cách tạo Telegram Bot",
+        "chatIdInstructions": [
+            "Mở Telegram và tìm @userinfobot",
+            "Nhắn tin bất kỳ cho bot đó",
+            "Bot sẽ trả về thông tin của bạn, bao gồm Id",
+            "Copy số Id đó và dán vào ô bên dưới"
+        ],
+        "botInstructions": [
+            "Mở Telegram và tìm @BotFather",
+            "Gửi lệnh /newbot",
+            "Đặt tên và username cho bot",
+            "BotFather sẽ gửi cho bạn Bot Token",
+            "Copy token đó và dán vào ô bên dưới"
+        ],
+        "alerts": {
+            "reminderInfo": "Nhận thông báo nhắc nhở task qua Telegram",
+            "reminderDescription": "Nhập Chat ID của bạn để nhận thông báo khi task sắp đến hạn (3 ngày và 1 ngày trước deadline).",
+            "botConfigInfo": "Cấu hình Bot Token để gửi thông báo",
+            "botConfigDescription": "Bạn cần tạo một Telegram Bot và nhập Bot Token tại đây để hệ thống có thể gửi thông báo đến người dùng.",
+            "botConfigured": "Bot Token đã được cấu hình"
+        },
+        "messages": {
+            "chatIdSaved": "Đã lưu Chat ID thành công",
+            "botTokenSaved": "Đã lưu Bot Token thành công",
+            "testSent": "Đã gửi tin nhắn test!",
+            "invalidBotToken": "Bot Token không hợp lệ",
+            "enterChatIdFirst": "Vui lòng nhập Chat ID trước khi test"
+        }
     }
 }

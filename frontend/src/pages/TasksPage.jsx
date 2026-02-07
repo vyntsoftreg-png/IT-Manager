@@ -76,19 +76,28 @@ const TasksPage = () => {
             queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         };
 
+        const handleTaskUpdated = () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['taskStats'] });
+            queryClient.invalidateQueries({ queryKey: ['taskDetail'] });
+        };
+
         const handleTaskDeleted = () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
             queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         };
 
         socket.on('task:created', handleTaskCreated);
+        socket.on('task:updated', handleTaskUpdated);
         socket.on('task:deleted', handleTaskDeleted);
 
         return () => {
             socket.off('task:created', handleTaskCreated);
+            socket.off('task:updated', handleTaskUpdated);
             socket.off('task:deleted', handleTaskDeleted);
         };
     }, [socket, queryClient]);
+
 
     // Set dayjs locale based on current language
     useEffect(() => {
@@ -188,7 +197,12 @@ const TasksPage = () => {
             await queryClient.invalidateQueries({ queryKey: ['tasks'] });
             await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         },
+        onError: (error) => {
+            console.error('Update task error:', error);
+            message.error(error?.response?.data?.message || t('common.operationFailed'));
+        },
     });
+
 
     const addCommentMutation = useMutation({
         mutationFn: ({ taskId, content }) => taskService.addComment(taskId, content),

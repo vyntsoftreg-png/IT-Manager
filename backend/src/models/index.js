@@ -9,6 +9,8 @@ const SystemSetting = require('./SystemSetting');
 const PingHistory = require('./PingHistory');
 const Task = require('./Task');
 const TaskComment = require('./TaskComment');
+const PersonalTask = require('./PersonalTask');
+const PersonalTaskCategory = require('./PersonalTaskCategory');
 
 // Define associations
 
@@ -110,6 +112,45 @@ TaskComment.belongsTo(User, {
     as: 'user',
 });
 
+// PersonalTaskCategory associations
+User.hasMany(PersonalTaskCategory, {
+    foreignKey: 'user_id',
+    as: 'personalTaskCategories',
+});
+PersonalTaskCategory.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user',
+});
+
+// PersonalTask associations
+User.hasMany(PersonalTask, {
+    foreignKey: 'user_id',
+    as: 'personalTasks',
+});
+PersonalTask.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user',
+});
+
+PersonalTaskCategory.hasMany(PersonalTask, {
+    foreignKey: 'category_id',
+    as: 'tasks',
+});
+PersonalTask.belongsTo(PersonalTaskCategory, {
+    foreignKey: 'category_id',
+    as: 'category',
+});
+
+// PersonalTask self-reference for subtasks
+PersonalTask.hasMany(PersonalTask, {
+    foreignKey: 'parent_id',
+    as: 'subtasks',
+});
+PersonalTask.belongsTo(PersonalTask, {
+    foreignKey: 'parent_id',
+    as: 'parent',
+});
+
 module.exports = {
     sequelize,
     User,
@@ -122,4 +163,6 @@ module.exports = {
     PingHistory,
     Task,
     TaskComment,
+    PersonalTask,
+    PersonalTaskCategory,
 };

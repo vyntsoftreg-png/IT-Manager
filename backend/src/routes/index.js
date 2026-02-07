@@ -13,6 +13,8 @@ const pingRoutes = require('./ping');
 const taskRoutes = require('./tasks');
 const supportRoutes = require('./support');
 const backupRoutes = require('./backup');
+const personalTaskRoutes = require('./personalTasks');
+const personalTaskCategoryRoutes = require('./personalTaskCategories');
 
 router.use('/auth', authRoutes);
 router.use('/devices', deviceRoutes);
@@ -27,6 +29,9 @@ router.use('/tasks', taskRoutes);
 router.use('/support', supportRoutes);
 router.use('/backup', backupRoutes);
 router.use('/wiki', require('./wiki'));
+router.use('/personal-tasks', personalTaskRoutes);
+router.use('/personal-task-categories', personalTaskCategoryRoutes);
+router.use('/telegram', require('./telegram'));
 
 // Health check
 router.get('/health', (req, res) => {

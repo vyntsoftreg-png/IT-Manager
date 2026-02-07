@@ -1,6 +1,7 @@
 const { Task, TaskComment, User, AuditLog } = require('../models');
 const { Op } = require('sequelize');
 const { emitEvent } = require('../services/socketService');
+const telegramService = require('../services/telegramService');
 
 // Get all tasks with filters and pagination
 const getTasks = async (req, res) => {
@@ -114,7 +115,6 @@ const createTask = async (req, res) => {
                 entity_id: task.id,
                 new_values: taskData,
                 ip_address: req.ip,
-                ip_address: req.ip,
             });
         }
 
@@ -127,6 +127,28 @@ const createTask = async (req, res) => {
 
         // Emit task created event for refreshing lists
         emitEvent('task:created', task);
+
+        // Send Telegram notification to all IT staff
+        try {
+            const itStaff = await User.findAll({
+                where: {
+                    role: { [Op.in]: ['admin', 'it_ops'] },
+                    telegram_chat_id: { [Op.ne]: null },
+                    is_active: true
+                }
+            });
+
+            if (itStaff.length > 0) {
+                telegramService.notifyITStaff(itStaff, task, 'created')
+                    .then(results => {
+                        const sent = results.filter(r => r.success).length;
+                        console.log(`[Telegram] Support ticket notification sent to ${sent}/${itStaff.length} IT staff`);
+                    })
+                    .catch(err => console.error('[Telegram] Error notifying IT staff:', err));
+            }
+        } catch (telegramError) {
+            console.error('[Telegram] Error fetching IT staff:', telegramError);
+        }
 
         res.status(201).json({
             success: true,
@@ -142,12 +164,18 @@ const createTask = async (req, res) => {
 // Update task
 const updateTask = async (req, res) => {
     try {
+        console.log('[updateTask] Called with ID:', req.params.id);
+        console.log('[updateTask] Body:', JSON.stringify(req.body));
+
         const task = await Task.findByPk(req.params.id);
         if (!task) {
+            console.log('[updateTask] Task not found');
             return res.status(404).json({ success: false, message: 'Task not found' });
         }
 
+        console.log('[updateTask] Current task status:', task.status);
         const oldValues = task.toJSON();
+        const oldStatus = task.status;
 
         // If status changed to resolved, set resolved_at
         if (req.body.status === 'resolved' && task.status !== 'resolved') {
@@ -155,17 +183,45 @@ const updateTask = async (req, res) => {
         }
 
         await task.update(req.body);
+        console.log('[updateTask] Task updated successfully, new status:', task.status);
 
-        // Log audit
+        // Log audit - stringify values to avoid validation error
         await AuditLog.create({
             user_id: req.user.id,
             action: 'UPDATE',
             entity_type: 'task',
             entity_id: task.id,
-            old_values: oldValues,
-            new_values: req.body,
+            old_values: JSON.stringify(oldValues),
+            new_values: JSON.stringify(req.body),
             ip_address: req.ip,
         });
+
+        // Emit real-time update event for UI refresh
+        emitEvent('task:updated', task);
+
+        // Send Telegram notification if status changed
+        if (req.body.status && oldStatus !== req.body.status) {
+            try {
+                const itStaff = await User.findAll({
+                    where: {
+                        role: { [Op.in]: ['admin', 'it_ops'] },
+                        telegram_chat_id: { [Op.ne]: null },
+                        is_active: true
+                    }
+                });
+
+                if (itStaff.length > 0) {
+                    const updateType = req.body.status === 'resolved' ? 'resolved' : 'status';
+                    telegramService.notifyITStaff(itStaff, task, 'updated', {
+                        type: updateType,
+                        oldStatus,
+                        newStatus: req.body.status
+                    }).catch(err => console.error('[Telegram] Error notifying status change:', err));
+                }
+            } catch (telegramError) {
+                console.error('[Telegram] Error:', telegramError);
+            }
+        }
 
         res.json({ success: true, message: 'Task updated', data: task });
     } catch (error) {
@@ -173,6 +229,7 @@ const updateTask = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to update task' });
     }
 };
+
 
 // Delete task
 const deleteTask = async (req, res) => {
@@ -228,6 +285,23 @@ const assignTask = async (req, res) => {
             ip_address: req.ip,
         });
 
+        // Send Telegram notification to assigned user
+        if (req.body.assigned_to) {
+            try {
+                const assignedUser = await User.findByPk(req.body.assigned_to);
+                if (assignedUser?.telegram_chat_id) {
+                    telegramService.sendSupportTicketUpdateNotification(
+                        assignedUser.telegram_chat_id,
+                        task,
+                        'assigned',
+                        { assignedTo: assignedUser.display_name || assignedUser.username }
+                    ).catch(err => console.error('[Telegram] Error notifying assignee:', err));
+                }
+            } catch (telegramError) {
+                console.error('[Telegram] Error:', telegramError);
+            }
+        }
+
         res.json({ success: true, message: 'Task assigned', data: task });
     } catch (error) {
         console.error('Assign task error:', error);
@@ -261,6 +335,30 @@ const updateTaskStatus = async (req, res) => {
             new_values: { status: req.body.status },
             ip_address: req.ip,
         });
+
+        // Send Telegram notification for status change
+        if (oldStatus !== req.body.status) {
+            try {
+                const itStaff = await User.findAll({
+                    where: {
+                        role: { [Op.in]: ['admin', 'it_ops'] },
+                        telegram_chat_id: { [Op.ne]: null },
+                        is_active: true
+                    }
+                });
+
+                if (itStaff.length > 0) {
+                    const updateType = req.body.status === 'resolved' ? 'resolved' : 'status';
+                    telegramService.notifyITStaff(itStaff, task, 'updated', {
+                        type: updateType,
+                        oldStatus,
+                        newStatus: req.body.status
+                    }).catch(err => console.error('[Telegram] Error notifying status change:', err));
+                }
+            } catch (telegramError) {
+                console.error('[Telegram] Error:', telegramError);
+            }
+        }
 
         res.json({ success: true, message: 'Status updated', data: task });
     } catch (error) {

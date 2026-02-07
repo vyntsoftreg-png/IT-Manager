@@ -37,6 +37,10 @@ const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
+    telegram_chat_id: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+    },
 }, {
     tableName: 'users',
     hooks: {

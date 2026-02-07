@@ -23,6 +23,7 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const SupportRequestPage = lazy(() => import('./pages/SupportRequestPage'));
 const BackupPage = lazy(() => import('./pages/BackupPage'));
 const WikiPage = lazy(() => import('./pages/WikiPage'));
+const PersonalTasksPage = lazy(() => import('./pages/PersonalTasksPage'));
 
 import './App.css';
 
@@ -113,6 +114,7 @@ const ThemedApp = () => {
                     <Route path="ip-map" element={<IpMapPage />} />
                     <Route path="accounts" element={<AccountsPage />} />
                     <Route path="tasks" element={<TasksPage />} />
+                    <Route path="personal-tasks" element={<PersonalTasksPage />} />
                     <Route path="audit-logs" element={<AuditLogPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />

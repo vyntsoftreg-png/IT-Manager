@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { Task } = require('../models');
+const { Task, User } = require('../models');
+const { Op } = require('sequelize');
 const { emitEvent } = require('../services/socketService');
+const telegramService = require('../services/telegramService');
 
 // Public endpoint - no authentication required
 // Anyone can submit a support request
@@ -57,6 +59,28 @@ router.post('/request', async (req, res) => {
         // Emit task created event for refreshing lists
         emitEvent('task:created', task);
 
+        // Send Telegram notification to all IT staff
+        try {
+            const itStaff = await User.findAll({
+                where: {
+                    role: { [Op.in]: ['admin', 'it_ops'] },
+                    telegram_chat_id: { [Op.ne]: null },
+                    is_active: true
+                }
+            });
+
+            if (itStaff.length > 0) {
+                telegramService.notifyITStaff(itStaff, task, 'created')
+                    .then(results => {
+                        const sent = results.filter(r => r.success).length;
+                        console.log(`[Telegram] Support ticket notification sent to ${sent}/${itStaff.length} IT staff`);
+                    })
+                    .catch(err => console.error('[Telegram] Error notifying IT staff:', err));
+            }
+        } catch (telegramError) {
+            console.error('[Telegram] Error fetching IT staff:', telegramError);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Yêu cầu đã được gửi thành công',
@@ -73,6 +97,7 @@ router.post('/request', async (req, res) => {
         });
     }
 });
+
 
 // Check request status by task number (public)
 router.get('/status/:taskNumber', async (req, res) => {

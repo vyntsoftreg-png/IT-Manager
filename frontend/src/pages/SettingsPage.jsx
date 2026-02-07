@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import {
     Card, Form, Switch, Select, Button, Typography, Space, message,
-    Divider, Radio, Row, Col, Tabs, Table, Modal, Input, Tag, Popconfirm, Empty, Spin
+    Divider, Radio, Row, Col, Tabs, Table, Modal, Input, Tag, Popconfirm, Empty, Spin,
+    Alert, Collapse
 } from 'antd';
 import {
     SettingOutlined, SaveOutlined, SunOutlined, MoonOutlined,
-    PlusOutlined, EditOutlined, DeleteOutlined, DatabaseOutlined
+    PlusOutlined, EditOutlined, DeleteOutlined, DatabaseOutlined,
+    SendOutlined, CheckCircleOutlined, QuestionCircleOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { settingsService } from '../services/settingsService';
+import { telegramService } from '../services/telegramService';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Title, Text } = Typography;
@@ -30,6 +33,13 @@ const SettingsPage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [itemForm] = Form.useForm();
+
+    // Telegram settings state
+    const [botToken, setBotToken] = useState('');
+    const [chatId, setChatId] = useState('');
+    const [telegramLoading, setTelegramLoading] = useState(false);
+    const [botConfigured, setBotConfigured] = useState(false);
+    const [chatConfigured, setChatConfigured] = useState(false);
 
     // Load saved settings
     const savedSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
@@ -73,6 +83,77 @@ const SettingsPage = () => {
             loadSettings(selectedCategory);
         }
     }, [selectedCategory, user]);
+
+    // Load Telegram settings
+    useEffect(() => {
+        const loadTelegramSettings = async () => {
+            try {
+                // Load chat ID for current user
+                const chatRes = await telegramService.getMyChatId();
+                if (chatRes.success) {
+                    setChatId(chatRes.data.telegram_chat_id || '');
+                    setChatConfigured(chatRes.data.is_configured);
+                }
+
+                // Load bot token for admin
+                if (user?.role === 'admin') {
+                    const botRes = await telegramService.getBotToken();
+                    if (botRes.success) {
+                        setBotToken(botRes.data.bot_token || '');
+                        setBotConfigured(botRes.data.is_configured);
+                    }
+                }
+            } catch (error) {
+                console.error('Load telegram settings error:', error);
+            }
+        };
+        if (user) loadTelegramSettings();
+    }, [user]);
+
+    // Telegram handlers
+    const handleSaveBotToken = async () => {
+        setTelegramLoading(true);
+        try {
+            const res = await telegramService.updateBotToken(botToken);
+            if (res.success) {
+                message.success(res.message);
+                setBotConfigured(true);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Lỗi lưu Bot Token');
+        } finally {
+            setTelegramLoading(false);
+        }
+    };
+
+    const handleSaveChatId = async () => {
+        setTelegramLoading(true);
+        try {
+            const res = await telegramService.updateMyChatId(chatId);
+            if (res.success) {
+                message.success(res.message);
+                setChatConfigured(true);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Lỗi lưu Chat ID');
+        } finally {
+            setTelegramLoading(false);
+        }
+    };
+
+    const handleTestTelegram = async () => {
+        setTelegramLoading(true);
+        try {
+            const res = await telegramService.sendTestMessage();
+            if (res.success) {
+                message.success(res.message);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Lỗi gửi tin nhắn test');
+        } finally {
+            setTelegramLoading(false);
+        }
+    };
 
     const handleSaveSettings = (values) => {
         setLoading(true);
@@ -313,10 +394,134 @@ const SettingsPage = () => {
                 </>
             ),
         },
+        {
+            key: 'personal',
+            label: (
+                <Space>
+                    <SettingOutlined />
+                    {t('telegram.personalSettings')}
+                </Space>
+            ),
+            children: (
+                <Card title={t('telegram.title')} bordered={false}>
+                    <Alert
+                        message={t('telegram.alerts.reminderInfo')}
+                        description={t('telegram.alerts.reminderDescription')}
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 24 }}
+                    />
+
+                    <Collapse ghost defaultActiveKey={['howto']}>
+                        <Collapse.Panel header={<Space><QuestionCircleOutlined /> {t('telegram.howToGetChatId')}</Space>} key="howto">
+                            <ol>
+                                <li>{t('telegram.chatIdInstructions.0')}</li>
+                                <li>{t('telegram.chatIdInstructions.1')}</li>
+                                <li>{t('telegram.chatIdInstructions.2')}</li>
+                                <li>{t('telegram.chatIdInstructions.3')}</li>
+                            </ol>
+                        </Collapse.Panel>
+                    </Collapse>
+
+                    <Form layout="vertical" style={{ marginTop: 16 }}>
+                        <Form.Item label={t('telegram.chatIdLabel')}>
+                            <Space.Compact style={{ width: '100%' }}>
+                                <Input
+                                    placeholder="123456789"
+                                    value={chatId}
+                                    onChange={(e) => setChatId(e.target.value)}
+                                    suffix={chatConfigured ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : null}
+                                />
+                                <Button
+                                    type="primary"
+                                    onClick={handleSaveChatId}
+                                    loading={telegramLoading}
+                                    icon={<SaveOutlined />}
+                                >
+                                    {t('telegram.save')}
+                                </Button>
+                            </Space.Compact>
+                        </Form.Item>
+
+                        {chatConfigured && (
+                            <Button
+                                onClick={handleTestTelegram}
+                                loading={telegramLoading}
+                                icon={<SendOutlined />}
+                            >
+                                {t('telegram.sendTest')}
+                            </Button>
+                        )}
+                    </Form>
+                </Card>
+            ),
+        },
     ];
 
     // Add lookup management tab for admins
     if (user?.role === 'admin') {
+        tabItems.push({
+            key: 'telegram-admin',
+            label: (
+                <Space>
+                    <SendOutlined />
+                    {t('telegram.adminSettings')}
+                </Space>
+            ),
+            children: (
+                <Card title={t('telegram.adminSettings')} bordered={false}>
+                    <Alert
+                        message={t('telegram.alerts.botConfigInfo')}
+                        description={t('telegram.alerts.botConfigDescription')}
+                        type="warning"
+                        showIcon
+                        style={{ marginBottom: 24 }}
+                    />
+
+                    <Collapse ghost>
+                        <Collapse.Panel header={<Space><QuestionCircleOutlined /> {t('telegram.howToCreateBot')}</Space>} key="howto">
+                            <ol>
+                                <li>{t('telegram.botInstructions.0')}</li>
+                                <li>{t('telegram.botInstructions.1')}</li>
+                                <li>{t('telegram.botInstructions.2')}</li>
+                                <li>{t('telegram.botInstructions.3')}</li>
+                                <li>{t('telegram.botInstructions.4')}</li>
+                            </ol>
+                        </Collapse.Panel>
+                    </Collapse>
+
+                    <Form layout="vertical" style={{ marginTop: 16, maxWidth: 600 }}>
+                        <Form.Item label={t('telegram.botTokenLabel')}>
+                            <Space.Compact style={{ width: '100%' }}>
+                                <Input.Password
+                                    placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                                    value={botToken}
+                                    onChange={(e) => setBotToken(e.target.value)}
+                                />
+                                <Button
+                                    type="primary"
+                                    onClick={handleSaveBotToken}
+                                    loading={telegramLoading}
+                                    icon={<SaveOutlined />}
+                                >
+                                    {t('telegram.saveAndTest')}
+                                </Button>
+                            </Space.Compact>
+                        </Form.Item>
+
+                        {botConfigured && (
+                            <Alert
+                                message={t('telegram.alerts.botConfigured')}
+                                type="success"
+                                showIcon
+                                icon={<CheckCircleOutlined />}
+                            />
+                        )}
+                    </Form>
+                </Card>
+            ),
+        });
+
         tabItems.push({
             key: 'lookups',
             label: (

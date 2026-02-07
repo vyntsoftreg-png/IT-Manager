@@ -56,6 +56,8 @@
         "ipMap": "IP Map",
         "accounts": "Admin Accounts",
         "tasks": "Tasks",
+        "personalTasks": "My Tasks",
+        "wiki": "Knowledge Base",
         "auditLog": "Audit Log",
         "settings": "Settings",
         "profile": "Profile",
@@ -467,5 +469,100 @@
         "invalidFormat": "Invalid backup file format",
         "parseError": "Failed to parse backup file",
         "adminOnly": "This feature is only available for administrators"
+    },
+    "personalTasks": {
+        "title": "My Tasks",
+        "subtitle": "Manage your personal daily tasks",
+        "addTask": "Add Task",
+        "editTask": "Edit Task",
+        "categories": "Categories",
+        "addCategory": "Add Category",
+        "editCategory": "Edit Category",
+        "noTasks": "No tasks yet",
+        "task": "Task",
+        "description": "Description",
+        "category": "Category",
+        "priority": "Priority",
+        "status": "Status",
+        "dueDate": "Due Date",
+        "recurring": "Recurring",
+        "recurringSettings": "Recurring Settings",
+        "recurringType": "Repeat Type",
+        "recurringEndDate": "End Date",
+        "complete": "Complete",
+        "confirmDelete": "Delete this task?",
+        "existingCategories": "Existing categories:",
+        "priorities": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+        },
+        "statuses": {
+            "pending": "Pending",
+            "in_progress": "In Progress",
+            "completed": "Completed"
+        },
+        "recurringTypes": {
+            "none": "No Repeat",
+            "daily": "Daily",
+            "weekly": "Weekly",
+            "monthly": "Monthly"
+        },
+        "stats": {
+            "total": "Total",
+            "pending": "Pending",
+            "completed": "Completed",
+            "overdue": "Overdue"
+        },
+        "messages": {
+            "createSuccess": "Task created successfully!",
+            "updateSuccess": "Task updated successfully!",
+            "deleteSuccess": "Task deleted successfully!",
+            "statusUpdated": "Status updated successfully!",
+            "categoryCreated": "Category created successfully!",
+            "categoryUpdated": "Category updated successfully!",
+            "categoryDeleted": "Category deleted successfully!"
+        }
+    },
+    "telegram": {
+        "title": "Telegram Settings",
+        "personalSettings": "Personal Settings",
+        "adminSettings": "Telegram Bot (Admin)",
+        "chatIdLabel": "Telegram Chat ID",
+        "botTokenLabel": "Bot Token",
+        "save": "Save",
+        "saveAndTest": "Save & Test",
+        "sendTest": "Send Test Message",
+        "configured": "Configured",
+        "notConfigured": "Not Configured",
+        "howToGetChatId": "How to get Chat ID",
+        "howToCreateBot": "How to create Telegram Bot",
+        "chatIdInstructions": [
+            "Open Telegram and find @userinfobot",
+            "Send any message to the bot",
+            "The bot will reply with your info, including your Id",
+            "Copy that Id and paste it below"
+        ],
+        "botInstructions": [
+            "Open Telegram and find @BotFather",
+            "Send command /newbot",
+            "Set a name and username for your bot",
+            "BotFather will send you a Bot Token",
+            "Copy that token and paste it below"
+        ],
+        "alerts": {
+            "reminderInfo": "Receive task reminder notifications via Telegram",
+            "reminderDescription": "Enter your Chat ID to receive notifications when tasks are due (3 days and 1 day before deadline).",
+            "botConfigInfo": "Configure Bot Token to send notifications",
+            "botConfigDescription": "You need to create a Telegram Bot and enter the Bot Token here so the system can send notifications to users.",
+            "botConfigured": "Bot Token has been configured"
+        },
+        "messages": {
+            "chatIdSaved": "Chat ID saved successfully",
+            "botTokenSaved": "Bot Token saved successfully",
+            "testSent": "Test message sent!",
+            "invalidBotToken": "Invalid Bot Token",
+            "enterChatIdFirst": "Please enter Chat ID first"
+        }
     }
 }

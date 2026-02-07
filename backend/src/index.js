@@ -109,6 +109,11 @@ const startServer = async () => {
         initSocket(server);
         console.log('🔌 Socket.io initialized');
 
+        // Start Telegram reminder worker
+        const { startReminderWorker } = require('./workers/reminderWorker');
+        startReminderWorker();
+        console.log('📬 Telegram reminder worker started');
+
         server.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
             console.log(`📚 API available at http://localhost:${PORT}/api`);
