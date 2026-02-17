@@ -11,6 +11,7 @@ const Task = require('./Task');
 const TaskComment = require('./TaskComment');
 const PersonalTask = require('./PersonalTask');
 const PersonalTaskCategory = require('./PersonalTaskCategory');
+const Document = require('./Document');
 
 // Define associations
 
@@ -151,6 +152,16 @@ PersonalTask.belongsTo(PersonalTask, {
     as: 'parent',
 });
 
+// Document associations
+User.hasMany(Document, {
+    foreignKey: 'uploaded_by',
+    as: 'documents',
+});
+Document.belongsTo(User, {
+    foreignKey: 'uploaded_by',
+    as: 'uploader',
+});
+
 module.exports = {
     sequelize,
     User,
@@ -165,4 +176,5 @@ module.exports = {
     TaskComment,
     PersonalTask,
     PersonalTaskCategory,
+    Document,
 };

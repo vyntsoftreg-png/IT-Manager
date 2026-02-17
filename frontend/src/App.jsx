@@ -22,7 +22,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
 const SupportRequestPage = lazy(() => import('./pages/SupportRequestPage'));
 const BackupPage = lazy(() => import('./pages/BackupPage'));
-const WikiPage = lazy(() => import('./pages/WikiPage'));
+const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 const PersonalTasksPage = lazy(() => import('./pages/PersonalTasksPage'));
 
 import './App.css';
@@ -119,7 +119,7 @@ const ThemedApp = () => {
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="backup" element={<BackupPage />} />
-                    <Route path="wiki" element={<WikiPage />} />
+                    <Route path="documents" element={<DocumentsPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

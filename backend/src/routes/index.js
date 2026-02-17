@@ -29,6 +29,7 @@ router.use('/tasks', taskRoutes);
 router.use('/support', supportRoutes);
 router.use('/backup', backupRoutes);
 router.use('/wiki', require('./wiki'));
+router.use('/documents', require('./documents'));
 router.use('/personal-tasks', personalTaskRoutes);
 router.use('/personal-task-categories', personalTaskCategoryRoutes);
 router.use('/telegram', require('./telegram'));

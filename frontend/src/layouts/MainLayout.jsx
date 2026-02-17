@@ -65,9 +65,9 @@ const MainLayout = () => {
             label: t('menu.personalTasks') || 'Việc của tôi',
         },
         {
-            key: '/wiki',
+            key: '/documents',
             icon: <BookOutlined />,
-            label: t('menu.wiki') || 'Knowledge Base',
+            label: t('menu.documents') || 'Documents',
         },
     ];
 

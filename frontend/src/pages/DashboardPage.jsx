@@ -27,6 +27,7 @@ import { segmentService } from '../services/segmentService';
 import { accountService } from '../services/accountService';
 import { auditService } from '../services/auditService';
 import taskService from '../services/taskService';
+import documentService from '../services/documentService';
 import { useAuth } from '../contexts/AuthContext';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -102,6 +103,13 @@ const DashboardPage = () => {
 
     const taskStats = taskStatsData?.data || { total: 0, open: 0, in_progress: 0, resolved: 0, urgent: 0 };
     const recentTasks = recentTasksData?.data || [];
+
+    // Document Stats
+    const { data: docStatsData } = useQuery({
+        queryKey: ['documentStats'],
+        queryFn: documentService.getStats,
+    });
+    const docStats = docStatsData?.data || { total: 0, recentCount: 0 };
 
     // Calculate IP stats from segment.stats
     const ipStats = segments.reduce((acc, segment) => {
@@ -289,6 +297,10 @@ const DashboardPage = () => {
         navigate(`/tasks${params ? '?' + params : ''}`);
     };
 
+    const handleNavigateDocuments = () => {
+        navigate('/documents');
+    };
+
     return (
         <div className="dashboard-page">
             {/* Header */}
@@ -386,7 +398,21 @@ const DashboardPage = () => {
                 </Col>
             </Row>
 
-            {/* Row 2: Charts */}
+            {/* Row 3: Document Stats */}
+            <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+                <Col xs={24} sm={12} lg={6}>
+                    <ClickableStatCard
+                        title={t('documents.title') || 'Documents'}
+                        value={docStats.total}
+                        subtitle={`${docStats.recentCount} ${t('documents.recentUploads') || 'new this week'}`}
+                        icon={<DatabaseOutlined />}
+                        color="#36d1dc"
+                        onClick={() => handleNavigateDocuments()}
+                    />
+                </Col>
+            </Row>
+
+            {/* Row 4: Charts */}
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={12}>
                     <Card
