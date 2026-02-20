@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const documentController = require('../controllers/documentController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -27,17 +27,19 @@ const upload = multer({
     },
 });
 
-router.use(authenticateToken);
+// Public routes — no login required (optionalAuth sets req.user if token present)
+router.get('/', optionalAuth, documentController.getDocuments);
+router.get('/stats', optionalAuth, documentController.getStats);
+router.get('/uploaders', optionalAuth, documentController.getUploaders);
+router.get('/:id', optionalAuth, documentController.getDocumentById);
+router.get('/:id/download', optionalAuth, documentController.downloadDocument);
+router.get('/:id/preview', optionalAuth, documentController.previewDocument);
+router.get('/:id/thumbnail', documentController.getThumbnail);
 
-router.get('/stats', documentController.getStats);
-router.get('/uploaders', documentController.getUploaders);
-router.get('/', documentController.getDocuments);
-router.get('/:id', documentController.getDocumentById);
-router.post('/', upload.single('file'), documentController.uploadDocument);
-router.put('/:id', documentController.updateDocument);
-router.delete('/:id', documentController.deleteDocument);
-router.get('/:id/download', documentController.downloadDocument);
-router.get('/:id/preview', documentController.previewDocument);
+// Protected routes — login required
+router.post('/', authenticateToken, upload.single('file'), documentController.uploadDocument);
+router.put('/:id', authenticateToken, documentController.updateDocument);
+router.delete('/:id', authenticateToken, documentController.deleteDocument);
 
 // Multer error handler
 router.use((err, req, res, next) => {

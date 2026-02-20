@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
     Row, Col, Card, Button, Input, Empty, message, Space, Modal, Upload,
     Typography, Tag, Tooltip, Dropdown, Switch, Pagination, Spin, Select, DatePicker,
@@ -8,12 +8,14 @@ import {
     EditOutlined, FileWordOutlined, FilePdfOutlined, FileExcelOutlined,
     FilePptOutlined, FileOutlined, SearchOutlined, PlusOutlined,
     CloudUploadOutlined, InboxOutlined, MoreOutlined, UserOutlined,
-    CalendarOutlined, DatabaseOutlined, ReloadOutlined,
+    CalendarOutlined, DatabaseOutlined, ReloadOutlined, LockOutlined, GlobalOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import documentService from '../services/documentService';
+import PdfCanvasViewer from '../components/PdfCanvasViewer';
+import PdfThumbnail from '../components/PdfThumbnail';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import './DocumentsPage.css';
@@ -52,12 +54,13 @@ const DocumentsPage = () => {
     const [uploaderFilter, setUploaderFilter] = useState('');
     const [dateRange, setDateRange] = useState(null);
     const [sortBy, setSortBy] = useState('created_at');
+    const [visibilityFilter, setVisibilityFilter] = useState('');
     const [page, setPage] = useState(1);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
-    const [uploadForm, setUploadForm] = useState({ title: '', description: '', allow_download: true, file: null });
+    const [uploadForm, setUploadForm] = useState({ title: '', description: '', allow_download: true, is_public: true, file: null });
     const [previewUrl, setPreviewUrl] = useState(null);
     const [previewLoading, setPreviewLoading] = useState(false);
 
@@ -67,6 +70,7 @@ const DocumentsPage = () => {
         ...(uploaderFilter && { uploaded_by: uploaderFilter }),
         ...(dateRange?.[0] && { from_date: dateRange[0].format('YYYY-MM-DD') }),
         ...(dateRange?.[1] && { to_date: dateRange[1].format('YYYY-MM-DD') }),
+        ...(visibilityFilter && { visibility: visibilityFilter }),
         sortBy,
         sortOrder: 'DESC',
     };
@@ -127,6 +131,7 @@ const DocumentsPage = () => {
         formData.append('title', uploadForm.title || uploadForm.file.name.replace(/\.[^/.]+$/, ''));
         formData.append('description', uploadForm.description);
         formData.append('allow_download', uploadForm.allow_download);
+        formData.append('is_public', uploadForm.is_public);
         uploadMutation.mutate(formData);
     };
 
@@ -153,6 +158,61 @@ const DocumentsPage = () => {
         }
     }, [previewUrl]);
 
+    const isOwnerOrAdmin = (doc) => {
+        return doc.uploaded_by === user?.id || user?.role === 'admin';
+    };
+
+    const canDownload = (doc) => {
+        return doc.allow_download || isOwnerOrAdmin(doc);
+    };
+
+    // Anti-capture protection for readonly documents
+    const previewContainerRef = useRef(null);
+    const isReadonly = selectedDoc && !canDownload(selectedDoc);
+
+    useEffect(() => {
+        if (!previewModalOpen || !isReadonly) return;
+
+        const container = previewContainerRef.current;
+        if (!container) return;
+
+        // 1. PrintScreen detection - blur + clear clipboard
+        const handleKeyUp = (e) => {
+            if (e.key === 'PrintScreen') {
+                container.style.filter = 'blur(30px)';
+                navigator.clipboard?.writeText?.('').catch(() => { });
+                setTimeout(() => { container.style.filter = ''; }, 1500);
+            }
+        };
+
+        // 2. Block Ctrl shortcuts
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'c', 'a', 'u'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+            }
+            if (e.key === 'PrintScreen') {
+                e.preventDefault();
+            }
+        };
+
+        // 3. Blur on visibility change (actual tab switch / alt-tab)
+        const handleVisibility = () => {
+            if (!container) return;
+            container.style.filter = document.hidden ? 'blur(30px)' : '';
+        };
+
+        document.addEventListener('keyup', handleKeyUp);
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            document.removeEventListener('keyup', handleKeyUp);
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            if (container) container.style.filter = '';
+        };
+    }, [previewModalOpen, isReadonly]);
+
     const handleDownload = async (doc) => {
         try {
             await documentService.downloadDocument(doc.id, doc.file_name);
@@ -177,13 +237,7 @@ const DocumentsPage = () => {
         setEditModalOpen(true);
     };
 
-    const isOwnerOrAdmin = (doc) => {
-        return doc.uploaded_by === user?.id || user?.role === 'admin';
-    };
 
-    const canDownload = (doc) => {
-        return doc.allow_download || isOwnerOrAdmin(doc);
-    };
 
     const getFileInfo = (ext) => FILE_ICONS[ext] || { icon: <FileOutlined />, color: '#999', label: ext?.toUpperCase() };
 
@@ -212,15 +266,17 @@ const DocumentsPage = () => {
                     </Title>
                     <Text type="secondary">{t('documents.subtitle')}</Text>
                 </div>
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    size="large"
-                    onClick={() => setUploadModalOpen(true)}
-                    className="upload-btn"
-                >
-                    {t('documents.upload')}
-                </Button>
+                {user && (
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        size="large"
+                        onClick={() => setUploadModalOpen(true)}
+                        className="upload-btn"
+                    >
+                        {t('documents.upload')}
+                    </Button>
+                )}
             </div>
 
             {/* Filters */}
@@ -259,6 +315,19 @@ const DocumentsPage = () => {
                         label: u.display_name || u.username,
                     }))}
                 />
+                {user && (
+                    <Select
+                        placeholder={t('documents.filterByVisibility') || 'Visibility'}
+                        value={visibilityFilter || undefined}
+                        onChange={(val) => { setVisibilityFilter(val || ''); setPage(1); }}
+                        allowClear
+                        style={{ width: 140 }}
+                        options={[
+                            { value: 'public', label: t('documents.public') || 'Public' },
+                            { value: 'private', label: t('documents.private') || 'Private' },
+                        ]}
+                    />
+                )}
                 <RangePicker
                     value={dateRange}
                     onChange={(dates) => { setDateRange(dates); setPage(1); }}
@@ -279,7 +348,7 @@ const DocumentsPage = () => {
                 <Button
                     icon={<ReloadOutlined />}
                     onClick={() => {
-                        setSearch(''); setFileTypeFilter(''); setUploaderFilter(''); setDateRange(null); setSortBy('created_at'); setPage(1);
+                        setSearch(''); setFileTypeFilter(''); setUploaderFilter(''); setDateRange(null); setSortBy('created_at'); setVisibilityFilter(''); setPage(1);
                         queryClient.invalidateQueries({ queryKey: ['documents'] });
                     }}
                 />
@@ -333,9 +402,23 @@ const DocumentsPage = () => {
                                             </Dropdown>,
                                         ]}
                                     >
-                                        <div className="doc-card-icon" style={{ color: fileInfo.color }}>
-                                            {fileInfo.icon}
-                                        </div>
+                                        {doc.file_extension === 'pdf' ? (
+                                            <PdfThumbnail
+                                                documentId={doc.id}
+                                                fetchBlob={(id) => documentService.getPreviewBlob(id, 'application/pdf')}
+                                            />
+                                        ) : doc.thumbnail_url ? (
+                                            <div className="doc-card-thumbnail">
+                                                <img
+                                                    src={doc.thumbnail_url}
+                                                    alt={doc.title}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="doc-card-icon" style={{ color: fileInfo.color }}>
+                                                {fileInfo.icon}
+                                            </div>
+                                        )}
                                         <div className="doc-card-body">
                                             <Tooltip title={doc.title}>
                                                 <Text strong className="doc-card-title" ellipsis>
@@ -348,9 +431,16 @@ const DocumentsPage = () => {
                                                 </Paragraph>
                                             )}
                                             <div className="doc-card-meta">
-                                                <Tag color={fileInfo.color} className="doc-type-tag">
-                                                    {fileInfo.label}
-                                                </Tag>
+                                                <Space size={4}>
+                                                    <Tag color={fileInfo.color} className="doc-type-tag">
+                                                        {fileInfo.label}
+                                                    </Tag>
+                                                    {!doc.is_public && (
+                                                        <Tag icon={<LockOutlined />} className="doc-type-tag" color="orange">
+                                                            {t('documents.private')}
+                                                        </Tag>
+                                                    )}
+                                                </Space>
                                                 <Text type="secondary" className="doc-size">
                                                     {formatFileSize(doc.file_size)}
                                                 </Text>
@@ -446,6 +536,15 @@ const DocumentsPage = () => {
                                 onChange={(checked) => setUploadForm((prev) => ({ ...prev, allow_download: checked }))}
                             />
                         </div>
+                        <div className="upload-option">
+                            <Text>{t('documents.visibility') || 'Public'}</Text>
+                            <Switch
+                                checked={uploadForm.is_public}
+                                onChange={(checked) => setUploadForm((prev) => ({ ...prev, is_public: checked }))}
+                                checkedChildren={t('documents.public') || 'Public'}
+                                unCheckedChildren={t('documents.private') || 'Private'}
+                            />
+                        </div>
                     </div>
                 </div>
             </Modal>
@@ -471,16 +570,33 @@ const DocumentsPage = () => {
                 destroyOnClose
             >
                 {selectedDoc && (
-                    <div className="preview-container">
+                    <div
+                        className="preview-container"
+                        ref={previewContainerRef}
+                        onContextMenu={(e) => { if (isReadonly) e.preventDefault(); }}
+                        style={{ position: 'relative' }}
+                    >
+                        {/* Anti-capture watermark for readonly docs */}
+                        {isReadonly && user && (
+                            <div className="preview-watermark">
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <span key={i}>{user.display_name || user.username}</span>
+                                ))}
+                            </div>
+                        )}
                         {previewLoading ? (
                             <div className="preview-loading">
                                 <Spin size="large" tip={t('common.loading') || 'Loading...'} />
                             </div>
                         ) : previewUrl && selectedDoc.file_extension === 'pdf' ? (
+                            <PdfCanvasViewer url={previewUrl} />
+                        ) : previewUrl && ['docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt'].includes(selectedDoc.file_extension) ? (
                             <iframe
                                 src={previewUrl}
                                 title={selectedDoc.title}
                                 className="preview-iframe"
+                                sandbox="allow-scripts allow-same-origin"
+                                style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }}
                             />
                         ) : previewUrl ? (
                             <div className="preview-fallback">
@@ -491,18 +607,17 @@ const DocumentsPage = () => {
                                 <Text type="secondary">
                                     {(FILE_ICONS[selectedDoc.file_extension] || {}).label || selectedDoc.file_extension?.toUpperCase()} • {formatFileSize(selectedDoc.file_size)}
                                 </Text>
-                                <Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                                    {t('documents.officeNoPreview') || 'Office files preview is available after deployment to a public server.'}
-                                </Text>
-                                <Button
-                                    type="primary"
-                                    icon={<DownloadOutlined />}
-                                    size="large"
-                                    style={{ marginTop: 24 }}
-                                    onClick={() => handleDownload(selectedDoc)}
-                                >
-                                    {t('documents.download')}
-                                </Button>
+                                {canDownload(selectedDoc) && (
+                                    <Button
+                                        type="primary"
+                                        icon={<DownloadOutlined />}
+                                        size="large"
+                                        style={{ marginTop: 24 }}
+                                        onClick={() => handleDownload(selectedDoc)}
+                                    >
+                                        {t('documents.download')}
+                                    </Button>
+                                )}
                             </div>
                         ) : null}
                     </div>
@@ -521,6 +636,7 @@ const DocumentsPage = () => {
                                 title: selectedDoc.title,
                                 description: selectedDoc.description,
                                 allow_download: selectedDoc.allow_download,
+                                is_public: selectedDoc.is_public,
                             },
                         });
                     }
@@ -554,6 +670,15 @@ const DocumentsPage = () => {
                             <Switch
                                 checked={selectedDoc.allow_download}
                                 onChange={(checked) => setSelectedDoc((prev) => ({ ...prev, allow_download: checked }))}
+                            />
+                        </div>
+                        <div className="upload-option">
+                            <Text>{t('documents.visibility') || 'Public'}</Text>
+                            <Switch
+                                checked={selectedDoc.is_public}
+                                onChange={(checked) => setSelectedDoc((prev) => ({ ...prev, is_public: checked }))}
+                                checkedChildren={t('documents.public') || 'Public'}
+                                unCheckedChildren={t('documents.private') || 'Private'}
                             />
                         </div>
                     </div>

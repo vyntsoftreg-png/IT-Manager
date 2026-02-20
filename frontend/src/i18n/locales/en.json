@@ -596,6 +596,10 @@
         "empty": "No documents yet",
         "fileTooLarge": "File size exceeds 50MB limit",
         "recentUploads": "new this week",
-        "officeNoPreview": "Office files preview is available after deployment to a public server."
+        "officeNoPreview": "Office files preview is available after deployment to a public server.",
+        "visibility": "Visibility",
+        "filterByVisibility": "Visibility",
+        "public": "Public",
+        "private": "Private"
     }
 }

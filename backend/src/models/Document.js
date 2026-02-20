@@ -39,6 +39,10 @@ const Document = sequelize.define('Document', {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },
+    is_public: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
     uploaded_by: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -51,6 +55,10 @@ const Document = sequelize.define('Document', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    thumbnail: {
+        type: DataTypes.BLOB('long'),
+        allowNull: true,
+    },
 }, {
     tableName: 'documents',
 });
@@ -58,6 +66,7 @@ const Document = sequelize.define('Document', {
 Document.prototype.toJSON = function () {
     const values = { ...this.get() };
     delete values.file_data;
+    delete values.thumbnail;
     return values;
 };
 

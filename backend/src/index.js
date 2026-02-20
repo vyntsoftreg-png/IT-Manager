@@ -84,8 +84,48 @@ app.use((req, res) => {
 const startServer = async () => {
     try {
         // Sync database - columns were added via migrate.js
+        // Migrate: add is_public column to documents if missing
+        try {
+            const [cols] = await sequelize.query("PRAGMA table_info('documents')");
+            if (!cols.find(c => c.name === 'is_public')) {
+                await sequelize.query("ALTER TABLE documents ADD COLUMN is_public TINYINT(1) DEFAULT 1");
+                await sequelize.query("UPDATE documents SET is_public = 1 WHERE is_public IS NULL");
+                console.log('✅ Added is_public column to documents');
+            }
+            if (!cols.find(c => c.name === 'thumbnail')) {
+                await sequelize.query("ALTER TABLE documents ADD COLUMN thumbnail BLOB");
+                console.log('✅ Added thumbnail column to documents');
+            }
+        } catch (e) { /* table may not exist yet, sync will create it */ }
+
         await sequelize.sync();
         console.log('✅ Database synchronized');
+
+        // Background: generate thumbnails for existing documents without one
+        (async () => {
+            try {
+                const { Document } = require('./models');
+                const XLSX = require('xlsx');
+                const mammoth = require('mammoth');
+                const docs = await Document.findAll({
+                    where: { thumbnail: null, file_extension: ['docx', 'xlsx', 'pptx'] },
+                    attributes: ['id', 'file_data', 'file_extension'],
+                });
+                if (docs.length === 0) return;
+                console.log(`🔄 Generating thumbnails for ${docs.length} documents...`);
+                const { generateThumbnailForExisting } = require('./controllers/documentController');
+                for (const doc of docs) {
+                    try {
+                        const thumb = await generateThumbnailForExisting(doc.file_data, doc.file_extension);
+                        if (thumb) {
+                            await doc.update({ thumbnail: thumb });
+                            console.log(`  ✅ Thumbnail for doc #${doc.id}`);
+                        }
+                    } catch (e) { /* skip */ }
+                }
+                console.log('✅ Thumbnail generation complete');
+            } catch (e) { console.error('Thumbnail generation error:', e.message); }
+        })();
 
         // Auto-seed default admin user if no users exist
         const { User } = require('./models');

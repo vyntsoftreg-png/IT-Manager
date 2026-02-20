@@ -46,7 +46,8 @@ const documentService = {
         const response = await api.get(`/documents/${id}/preview`, {
             responseType: 'blob',
         });
-        const blob = new Blob([response.data], { type: mimeType || 'application/octet-stream' });
+        const contentType = response.headers['content-type'] || mimeType || 'application/octet-stream';
+        const blob = new Blob([response.data], { type: contentType });
         return URL.createObjectURL(blob);
     },
 

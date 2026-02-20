@@ -25,7 +25,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
-const MainLayout = () => {
+const MainLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -197,7 +197,7 @@ const MainLayout = () => {
                     </div>
                 </Header>
                 <Content className="main-content">
-                    <Outlet />
+                    {children || <Outlet />}
                 </Content>
             </Layout>
         </Layout>

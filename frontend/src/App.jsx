@@ -25,7 +25,17 @@ const BackupPage = lazy(() => import('./pages/BackupPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 const PersonalTasksPage = lazy(() => import('./pages/PersonalTasksPage'));
 
+import { useAuth } from './contexts/AuthContext';
 import './App.css';
+
+// Wrapper: shows sidebar when logged in, standalone when anonymous
+const DocumentsPageWrapper = () => {
+  const { user } = useAuth();
+  if (user) {
+    return <MainLayout><DocumentsPage /></MainLayout>;
+  }
+  return <DocumentsPage />;
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,6 +111,7 @@ const ThemedApp = () => {
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/support" element={<SupportRequestPage />} />
+                  <Route path="/documents" element={<DocumentsPageWrapper />} />
                   <Route
                     path="/"
                     element={
@@ -119,7 +130,6 @@ const ThemedApp = () => {
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="backup" element={<BackupPage />} />
-                    <Route path="documents" element={<DocumentsPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
