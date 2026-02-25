@@ -120,7 +120,7 @@ const SettingsPage = () => {
                 setBotConfigured(true);
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Lỗi lưu Bot Token');
+            message.error(error.response?.data?.message || 'Failed to save Bot Token');
         } finally {
             setTelegramLoading(false);
         }
@@ -135,7 +135,7 @@ const SettingsPage = () => {
                 setChatConfigured(true);
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Lỗi lưu Chat ID');
+            message.error(error.response?.data?.message || 'Failed to save Chat ID');
         } finally {
             setTelegramLoading(false);
         }
@@ -149,7 +149,7 @@ const SettingsPage = () => {
                 message.success(res.message);
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Lỗi gửi tin nhắn test');
+            message.error(error.response?.data?.message || 'Failed to send test message');
         } finally {
             setTelegramLoading(false);
         }
@@ -283,10 +283,10 @@ const SettingsPage = () => {
                         onClick={() => handleEdit(record)}
                     />
                     <Popconfirm
-                        title="Xác nhận xóa?"
+                        title={t('common.confirmDelete') || 'Confirm delete?'}
                         onConfirm={() => handleDelete(record.id)}
-                        okText="Xóa"
-                        cancelText="Hủy"
+                        okText={t('common.delete') || 'Delete'}
+                        cancelText={t('common.cancel')}
                     >
                         <Button
                             type="text"
@@ -630,29 +630,29 @@ const SettingsPage = () => {
 
                     <Form.Item
                         name="key"
-                        label="Key (mã định danh)"
+                        label={t('settings.keyIdentifier') || 'Key (identifier)'}
                         rules={[
-                            { required: true, message: 'Vui lòng nhập key' },
-                            { pattern: /^[a-z0-9_]+$/, message: 'Key chỉ chứa chữ thường, số và dấu _' },
+                            { required: true, message: t('settings.keyRequired') || 'Please enter a key' },
+                            { pattern: /^[a-z0-9_]+$/, message: t('settings.keyPattern') || 'Key can only contain lowercase letters, numbers and _' },
                         ]}
                     >
-                        <Input placeholder="vd: laptop, server, production" disabled={!!editingItem} />
+                        <Input placeholder="e.g. laptop, server, production" disabled={!!editingItem} />
                     </Form.Item>
 
                     <Form.Item
                         name="label"
-                        label="Nhãn hiển thị"
-                        rules={[{ required: true, message: 'Vui lòng nhập nhãn' }]}
+                        label={t('settings.displayLabel') || 'Display Label'}
+                        rules={[{ required: true, message: t('settings.labelRequired') || 'Please enter a label' }]}
                     >
-                        <Input placeholder="vd: Laptop, Server, Production" />
+                        <Input placeholder="e.g. Laptop, Server, Production" />
                     </Form.Item>
 
-                    <Form.Item name="icon" label="Icon (emoji)">
-                        <Input placeholder="vd: 💻 🖥️ 🟢" style={{ fontSize: 20 }} maxLength={4} />
+                    <Form.Item name="icon" label={t('settings.iconEmoji') || 'Icon (emoji)'}>
+                        <Input placeholder="e.g. 💻 🖥️ 🟢" style={{ fontSize: 20 }} maxLength={4} />
                     </Form.Item>
 
-                    <Form.Item name="color" label="Màu">
-                        <Select placeholder="Chọn màu" allowClear>
+                    <Form.Item name="color" label={t('settings.color') || 'Color'}>
+                        <Select placeholder={t('settings.selectColor') || 'Select color'} allowClear>
                             {colorOptions.map(color => (
                                 <Select.Option key={color} value={color}>
                                     <Tag color={color}>{color}</Tag>

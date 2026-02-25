@@ -3,7 +3,10 @@ const router = express.Router();
 const settingsController = require('../controllers/settingsController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// Public routes (for dropdowns - needs authentication)
+// Public routes (no auth - for branding on login page)
+router.get('/branding', settingsController.getBranding);
+
+// Authenticated routes (for dropdowns)
 router.get('/categories', authenticateToken, settingsController.getCategories);
 router.get('/category/:category', authenticateToken, settingsController.getSettingsByCategory);
 

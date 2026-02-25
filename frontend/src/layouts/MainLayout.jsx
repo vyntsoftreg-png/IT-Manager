@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Dropdown, Avatar, Typography, theme } from 'antd';
 import {
     DashboardOutlined,
@@ -19,6 +19,7 @@ import {
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { settingsService } from '../services/settingsService';
 import GlobalSearch from '../components/GlobalSearch';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -32,6 +33,18 @@ const MainLayout = ({ children }) => {
     const location = useLocation();
     const { token } = theme.useToken();
     const { t } = useTranslation();
+    const [branding, setBranding] = useState({ app_name: 'IT Manager', app_logo: '🖥️' });
+
+    useEffect(() => {
+        settingsService.getBranding()
+            .then(res => {
+                if (res.success) {
+                    setBranding(res.data);
+                    document.title = res.data.app_name || 'IT Manager';
+                }
+            })
+            .catch(() => { });
+    }, []);
 
     const baseMenuItems = [
         {
@@ -147,8 +160,8 @@ const MainLayout = ({ children }) => {
                 width={240}
             >
                 <div className="sider-logo">
-                    <span className="logo-icon">🖥️</span>
-                    {!collapsed && <span className="logo-text">IT Manager</span>}
+                    <span className="logo-icon">{branding.app_logo}</span>
+                    {!collapsed && <span className="logo-text">{branding.app_name}</span>}
                 </div>
                 <Menu
                     mode="inline"

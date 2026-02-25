@@ -459,7 +459,7 @@ const revealPassword = async (req, res) => {
             await createAuditLog(req.user.id, 'failed_reveal_password', 'admin_accounts', req.params.id, null, null, req);
             return res.status(401).json({
                 success: false,
-                message: 'Mật khẩu không chính xác',
+                message: 'Incorrect password',
             });
         }
 
@@ -476,7 +476,7 @@ const revealPassword = async (req, res) => {
         if (!account.encrypted_password) {
             return res.status(404).json({
                 success: false,
-                message: 'Tài khoản này không có mật khẩu được lưu',
+                message: 'No password stored for this account',
             });
         }
 
@@ -526,7 +526,7 @@ const exportAccounts = async (req, res) => {
             await createAuditLog(req.user.id, 'failed_export_accounts', 'admin_accounts', null, null, null, req);
             return res.status(401).json({
                 success: false,
-                message: 'Mật khẩu không chính xác',
+                message: 'Incorrect password',
             });
         }
 
@@ -615,20 +615,20 @@ const importAccounts = async (req, res) => {
 
             // Check required fields
             if (!row.system_name || !row.system_name.trim()) {
-                rowErrors.push('Thiếu tên hệ thống (system_name)');
+                rowErrors.push('Missing system name (system_name)');
             }
             if (!row.system_type || !row.system_type.trim()) {
-                rowErrors.push('Thiếu loại hệ thống (system_type)');
+                rowErrors.push('Missing system type (system_type)');
             } else if (!validTypes.includes(row.system_type)) {
-                rowErrors.push(`Loại hệ thống không hợp lệ: "${row.system_type}". Các loại hợp lệ: ${validTypes.join(', ')}`);
+                rowErrors.push(`Invalid system type: "${row.system_type}". Valid types: ${validTypes.join(', ')}`);
             }
             if (!row.username || !row.username.trim()) {
-                rowErrors.push('Thiếu tên đăng nhập (username)');
+                rowErrors.push('Missing username');
             }
 
             // Validate environment if provided
             if (row.environment && !validEnvs.includes(row.environment)) {
-                rowErrors.push(`Môi trường không hợp lệ: "${row.environment}". Các giá trị hợp lệ: ${validEnvs.join(', ')}`);
+                rowErrors.push(`Invalid environment: "${row.environment}". Valid values: ${validEnvs.join(', ')}`);
             }
 
             // Validate URL format if provided
@@ -636,14 +636,14 @@ const importAccounts = async (req, res) => {
                 try {
                     new URL(row.admin_url);
                 } catch {
-                    rowErrors.push(`URL không hợp lệ: "${row.admin_url}"`);
+                    rowErrors.push(`Invalid URL: "${row.admin_url}"`);
                 }
             }
 
             if (rowErrors.length > 0) {
                 validationErrors.push({
                     row: rowNum,
-                    name: row.system_name || '(không có tên)',
+                    name: row.system_name || '(no name)',
                     errors: rowErrors,
                 });
             } else {
@@ -655,7 +655,7 @@ const importAccounts = async (req, res) => {
         if (validationErrors.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Có ${validationErrors.length} dòng lỗi. Vui lòng sửa dữ liệu và thử lại.`,
+                message: `${validationErrors.length} rows have errors. Please fix and try again.`,
                 errors: validationErrors,
                 totalRows: accounts.length,
                 errorCount: validationErrors.length,
@@ -714,7 +714,7 @@ const importAccounts = async (req, res) => {
 
         res.json({
             success: true,
-            message: `Import thành công: ${results.created} tạo mới, ${results.updated} cập nhật!`,
+            message: `Import successful: ${results.created} created, ${results.updated} updated!`,
             data: results,
         });
     } catch (error) {

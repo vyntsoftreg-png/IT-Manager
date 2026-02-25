@@ -43,4 +43,10 @@ export const settingsService = {
         const response = await api.post('/settings/seed');
         return response.data;
     },
+
+    // Get branding settings (public - no auth required)
+    getBranding: async () => {
+        const response = await api.get('/settings/branding');
+        return response.data;
+    },
 };

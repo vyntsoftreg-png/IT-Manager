@@ -4,6 +4,11 @@ const { createAuditLog } = require('../middleware/audit');
 
 // Default settings to seed
 const DEFAULT_SETTINGS = {
+    branding: [
+        { key: 'app_name', label: 'IT Manager', icon: '🏷️', color: 'blue' },
+        { key: 'app_logo', label: '🖥️', icon: '🎨', color: 'cyan' },
+        { key: 'app_description', label: 'IT Infrastructure Management System', icon: '📝', color: 'default' },
+    ],
     device_types: [
         { key: 'pc', label: 'PC / Desktop', icon: '💻', color: 'blue' },
         { key: 'laptop', label: 'Laptop', icon: '💻', color: 'cyan' },
@@ -13,16 +18,16 @@ const DEFAULT_SETTINGS = {
         { key: 'router', label: 'Router', icon: '🌐', color: 'orange' },
         { key: 'firewall', label: 'Firewall', icon: '🛡️', color: 'red' },
         { key: 'ap', label: 'Access Point (WiFi)', icon: '📶', color: 'lime' },
-        { key: 'printer', label: 'Máy in', icon: '🖨️', color: 'gray' },
+        { key: 'printer', label: 'Printer', icon: '🖨️', color: 'gray' },
         { key: 'camera', label: 'Camera', icon: '📷', color: 'volcano' },
         { key: 'ups', label: 'UPS', icon: '🔋', color: 'gold' },
-        { key: 'other', label: 'Khác', icon: '📦', color: 'default' },
+        { key: 'other', label: 'Other', icon: '📦', color: 'default' },
     ],
     device_statuses: [
-        { key: 'active', label: 'Đang hoạt động', icon: '🟢', color: 'success' },
-        { key: 'inactive', label: 'Không hoạt động', icon: '🔴', color: 'error' },
-        { key: 'maintenance', label: 'Bảo trì', icon: '🟡', color: 'warning' },
-        { key: 'retired', label: 'Đã loại bỏ', icon: '⚫', color: 'default' },
+        { key: 'active', label: 'Active', icon: '🟢', color: 'success' },
+        { key: 'inactive', label: 'Inactive', icon: '🔴', color: 'error' },
+        { key: 'maintenance', label: 'Maintenance', icon: '🟡', color: 'warning' },
+        { key: 'retired', label: 'Retired', icon: '⚫', color: 'default' },
     ],
     system_types: [
         { key: 'o365', label: 'Microsoft 365', icon: '🔷', color: 'blue' },
@@ -39,7 +44,7 @@ const DEFAULT_SETTINGS = {
         { key: 'database', label: 'Database', icon: '🗄️', color: 'geekblue' },
         { key: 'linux', label: 'Linux Server', icon: '🐧', color: 'magenta' },
         { key: 'windows', label: 'Windows Server', icon: '🪟', color: 'blue' },
-        { key: 'other', label: 'Khác', icon: '📦', color: 'default' },
+        { key: 'other', label: 'Other', icon: '📦', color: 'default' },
     ],
     environments: [
         { key: 'production', label: 'Production', icon: '🟢', color: 'success' },
@@ -49,13 +54,13 @@ const DEFAULT_SETTINGS = {
     ],
     departments: [
         { key: 'it', label: 'IT', icon: '💻', color: 'blue' },
-        { key: 'accounting', label: 'Kế toán', icon: '📊', color: 'green' },
-        { key: 'hr', label: 'Nhân sự', icon: '👥', color: 'purple' },
-        { key: 'sales', label: 'Kinh doanh', icon: '💼', color: 'orange' },
+        { key: 'accounting', label: 'Accounting', icon: '📊', color: 'green' },
+        { key: 'hr', label: 'Human Resources', icon: '👥', color: 'purple' },
+        { key: 'sales', label: 'Sales', icon: '💼', color: 'orange' },
         { key: 'marketing', label: 'Marketing', icon: '📢', color: 'cyan' },
-        { key: 'management', label: 'Ban lãnh đạo', icon: '👔', color: 'gold' },
-        { key: 'warehouse', label: 'Kho', icon: '📦', color: 'volcano' },
-        { key: 'production', label: 'Sản xuất', icon: '🏭', color: 'lime' },
+        { key: 'management', label: 'Management', icon: '👔', color: 'gold' },
+        { key: 'warehouse', label: 'Warehouse', icon: '📦', color: 'volcano' },
+        { key: 'production', label: 'Production', icon: '🏭', color: 'lime' },
     ],
 };
 
@@ -287,17 +292,52 @@ const seedDefaults = async (req, res) => {
 // Get available categories
 const getCategories = async (req, res) => {
     const categories = [
-        { key: 'device_types', label: 'Loại thiết bị', description: 'PC, Laptop, Server, Switch, etc.' },
-        { key: 'device_statuses', label: 'Trạng thái thiết bị', description: 'Hoạt động, Bảo trì, Loại bỏ' },
-        { key: 'system_types', label: 'Loại hệ thống', description: 'O365, VMware, Firewall, etc.' },
-        { key: 'environments', label: 'Môi trường', description: 'Production, Staging, Development' },
-        { key: 'departments', label: 'Phòng ban', description: 'IT, Kế toán, Nhân sự, etc.' },
+        { key: 'branding', label: 'Branding', description: 'App name, logo, and description' },
+        { key: 'device_types', label: 'Device Types', description: 'PC, Laptop, Server, Switch, etc.' },
+        { key: 'device_statuses', label: 'Device Statuses', description: 'Active, Maintenance, Retired' },
+        { key: 'system_types', label: 'System Types', description: 'O365, VMware, Firewall, etc.' },
+        { key: 'environments', label: 'Environments', description: 'Production, Staging, Development' },
+        { key: 'departments', label: 'Departments', description: 'IT, Accounting, HR, etc.' },
     ];
 
     res.json({
         success: true,
         data: categories,
     });
+};
+
+// Get branding settings (public - no auth required)
+const getBranding = async (req, res) => {
+    try {
+        const brandingSettings = await SystemSetting.findAll({
+            where: { category: 'branding', is_active: true },
+            attributes: ['key', 'label', 'icon'],
+        });
+
+        const branding = {};
+        brandingSettings.forEach(s => {
+            branding[s.key] = s.label;
+        });
+
+        res.json({
+            success: true,
+            data: {
+                app_name: branding.app_name || 'IT Manager',
+                app_logo: branding.app_logo || '🖥️',
+                app_description: branding.app_description || 'IT Infrastructure Management System',
+            },
+        });
+    } catch (error) {
+        // Fallback defaults on error
+        res.json({
+            success: true,
+            data: {
+                app_name: 'IT Manager',
+                app_logo: '🖥️',
+                app_description: 'IT Infrastructure Management System',
+            },
+        });
+    }
 };
 
 module.exports = {
@@ -308,4 +348,5 @@ module.exports = {
     deleteSetting,
     seedDefaults,
     getCategories,
+    getBranding,
 };

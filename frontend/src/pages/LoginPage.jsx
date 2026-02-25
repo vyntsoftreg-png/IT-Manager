@@ -1,18 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
 import { UserOutlined, LockOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { settingsService } from '../services/settingsService';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
+    const [branding, setBranding] = useState({ app_name: 'IT Manager', app_logo: '🖥️', app_description: '' });
     const { login } = useAuth();
     const navigate = useNavigate();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        settingsService.getBranding()
+            .then(res => { if (res.success) setBranding(res.data); })
+            .catch(() => { });
+    }, []);
 
     const onFinish = async (values) => {
         setLoading(true);
@@ -41,10 +49,10 @@ const LoginPage = () => {
                 <Space direction="vertical" size="large" style={{ width: '100%' }}>
                     <div className="login-header">
                         <div className="login-logo">
-                            <span className="logo-icon">🖥️</span>
+                            <span className="logo-icon">{branding.app_logo}</span>
                         </div>
                         <Title level={2} style={{ margin: 0, color: '#1a1a2e' }}>
-                            IT Manager
+                            {branding.app_name}
                         </Title>
                         <Text type="secondary">
                             {t('auth.loginTitle')}

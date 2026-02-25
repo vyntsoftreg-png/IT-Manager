@@ -64,19 +64,19 @@ const sendMessage = async (chatId, message, options = {}) => {
  * @param {string} reminderType - '3d' or '1d'
  */
 const sendTaskReminder = async (chatId, task, reminderType) => {
-    const daysText = reminderType === '3d' ? '3 ngày' : '1 ngày';
+    const daysText = reminderType === '3d' ? '3 days' : '1 day';
     const urgencyEmoji = reminderType === '1d' ? '🔴' : '🟡';
 
     const message = `
-${urgencyEmoji} <b>[MY TASK] Nhắc nhở Task cá nhân</b>
+${urgencyEmoji} <b>[MY TASK] Personal Task Reminder</b>
 
 📋 <b>${task.title}</b>
 📅 Deadline: <b>${task.due_date}</b>
-⏰ Còn <b>${daysText}</b> nữa là đến hạn!
+⏰ <b>${daysText}</b> remaining!
 
 ${task.description ? `📝 ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}` : ''}
 
-Hãy hoàn thành task đúng hạn nhé! 💪
+Please complete your task on time! 💪
     `.trim();
 
     return await sendMessage(chatId, message);
@@ -108,10 +108,10 @@ const testBotConnection = async (botToken) => {
  */
 const sendTestMessage = async (chatId) => {
     const message = `
-✅ <b>Test thành công!</b>
+✅ <b>Connection successful!</b>
 
-Bạn đã kết nối Telegram với IT Manager.
-Từ giờ bạn sẽ nhận được nhắc nhở task qua Telegram.
+Your Telegram is now linked to IT Manager.
+You will receive task reminders via Telegram.
     `.trim();
 
     return await sendMessage(chatId, message);
@@ -124,20 +124,20 @@ Từ giờ bạn sẽ nhận được nhắc nhở task qua Telegram.
  */
 const sendTaskCreatedNotification = async (chatId, task) => {
     const priorityEmoji = {
-        high: '🔴 Cao',
-        medium: '🟡 Trung bình',
-        low: '🟢 Thấp'
+        high: '🔴 High',
+        medium: '🟡 Medium',
+        low: '🟢 Low'
     };
 
     const message = `
-📝 <b>[MY TASK] Task cá nhân mới!</b>
+📝 <b>[MY TASK] New personal task!</b>
 
 📌 <b>${task.title}</b>
-${task.due_date ? `📅 Deadline: <b>${task.due_date}</b>` : '📅 Không có deadline'}
-🎯 Ưu tiên: ${priorityEmoji[task.priority] || '🟡 Trung bình'}
+${task.due_date ? `📅 Deadline: <b>${task.due_date}</b>` : '📅 No deadline'}
+🎯 Priority: ${priorityEmoji[task.priority] || '🟡 Medium'}
 ${task.description ? `\n📋 ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}` : ''}
 
-Chúc bạn hoàn thành tốt! 💪
+Good luck! 💪
     `.trim();
 
     return await sendMessage(chatId, message);
@@ -150,13 +150,13 @@ Chúc bạn hoàn thành tốt! 💪
  */
 const sendTaskCompletedNotification = async (chatId, task) => {
     const message = `
-✅ <b>[MY TASK] Task cá nhân hoàn thành!</b>
+✅ <b>[MY TASK] Task completed!</b>
 
 📌 <b>${task.title}</b>
 ${task.due_date ? `📅 Deadline: ${task.due_date}` : ''}
-🎉 Chúc mừng bạn đã hoàn thành task!
+🎉 Congratulations on completing your task!
 
-Tiếp tục phát huy nhé! 💪
+Keep up the great work! 💪
     `.trim();
 
     return await sendMessage(chatId, message);
@@ -171,34 +171,34 @@ Tiếp tục phát huy nhé! 💪
  */
 const sendSupportTicketCreatedNotification = async (chatId, ticket) => {
     const priorityEmoji = {
-        urgent: '🔴 Khẩn cấp',
-        high: '🟠 Cao',
-        medium: '🟡 Trung bình',
-        low: '🟢 Thấp'
+        urgent: '🔴 Urgent',
+        high: '🟠 High',
+        medium: '🟡 Medium',
+        low: '🟢 Low'
     };
 
     const categoryMap = {
-        hardware: '💻 Phần cứng',
-        software: '📀 Phần mềm',
-        network: '🌐 Mạng',
+        hardware: '💻 Hardware',
+        software: '📀 Software',
+        network: '🌐 Network',
         email: '📧 Email',
-        account: '👤 Tài khoản',
-        other: '📋 Khác'
+        account: '👤 Account',
+        other: '📋 Other'
     };
 
     const message = `
-🎫 <b>[SUPPORT] Yêu cầu hỗ trợ mới!</b>
+🎫 <b>[SUPPORT] New support request!</b>
 
 📝 <b>#${ticket.task_number || 'N/A'}</b>: ${ticket.title}
-${categoryMap[ticket.category] || '📋 Khác'} | ${priorityEmoji[ticket.priority] || '🟡 Trung bình'}
+${categoryMap[ticket.category] || '📋 Other'} | ${priorityEmoji[ticket.priority] || '🟡 Medium'}
 
-👤 Người yêu cầu: <b>${ticket.requester_name}</b>
-🏢 Phòng ban: ${ticket.requester_department || 'N/A'}
-📍 Vị trí: ${ticket.requester_location || 'N/A'}
+👤 Requester: <b>${ticket.requester_name}</b>
+🏢 Department: ${ticket.requester_department || 'N/A'}
+📍 Location: ${ticket.requester_location || 'N/A'}
 
-${ticket.description ? `📋 Mô tả: ${ticket.description.substring(0, 150)}${ticket.description.length > 150 ? '...' : ''}` : ''}
+${ticket.description ? `📋 Description: ${ticket.description.substring(0, 150)}${ticket.description.length > 150 ? '...' : ''}` : ''}
 
-⏰ Vui lòng xử lý sớm!
+⏰ Please handle this promptly!
     `.trim();
 
     return await sendMessage(chatId, message);
@@ -213,33 +213,33 @@ ${ticket.description ? `📋 Mô tả: ${ticket.description.substring(0, 150)}${
  */
 const sendSupportTicketUpdateNotification = async (chatId, ticket, updateType, changes = {}) => {
     const statusMap = {
-        open: '🔵 Mở',
-        in_progress: '🟡 Đang xử lý',
-        pending: '🟠 Chờ xử lý',
-        resolved: '✅ Đã giải quyết',
-        closed: '⚫ Đã đóng'
+        open: '🔵 Open',
+        in_progress: '🟡 In Progress',
+        pending: '🟠 Pending',
+        resolved: '✅ Resolved',
+        closed: '⚫ Closed'
     };
 
     let updateText = '';
     switch (updateType) {
         case 'status':
-            updateText = `📊 Trạng thái: ${statusMap[changes.oldStatus] || changes.oldStatus} → <b>${statusMap[changes.newStatus] || changes.newStatus}</b>`;
+            updateText = `📊 Status: ${statusMap[changes.oldStatus] || changes.oldStatus} → <b>${statusMap[changes.newStatus] || changes.newStatus}</b>`;
             break;
         case 'assigned':
-            updateText = `👷 Được giao cho: <b>${changes.assignedTo}</b>`;
+            updateText = `👷 Assigned to: <b>${changes.assignedTo}</b>`;
             break;
         case 'resolved':
-            updateText = `✅ Ticket đã được giải quyết!`;
+            updateText = `✅ Ticket has been resolved!`;
             break;
         default:
-            updateText = `📝 Ticket đã được cập nhật`;
+            updateText = `📝 Ticket has been updated`;
     }
 
     const message = `
-🎫 <b>[SUPPORT] Cập nhật ticket</b>
+🎫 <b>[SUPPORT] Ticket update</b>
 
 📝 <b>#${ticket.task_number || 'N/A'}</b>: ${ticket.title}
-👤 Người yêu cầu: ${ticket.requester_name}
+👤 Requester: ${ticket.requester_name}
 
 ${updateText}
     `.trim();
