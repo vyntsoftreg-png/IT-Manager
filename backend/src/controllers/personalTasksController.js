@@ -47,7 +47,7 @@ const getAll = async (req, res) => {
         res.json({ success: true, data: tasks });
     } catch (error) {
         console.error('Get personal tasks error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách task' });
+        res.status(500).json({ success: false, message: 'Error fetching task list' });
     }
 };
 
@@ -68,13 +68,13 @@ const getById = async (req, res) => {
         });
 
         if (!task) {
-            return res.status(404).json({ success: false, message: 'Task không tồn tại' });
+            return res.status(404).json({ success: false, message: 'Task not found' });
         }
 
         res.json({ success: true, data: task });
     } catch (error) {
         console.error('Get personal task error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy thông tin task' });
+        res.status(500).json({ success: false, message: 'Error fetching task details' });
     }
 };
 
@@ -84,10 +84,26 @@ const create = async (req, res) => {
         const { title, description, category_id, priority, due_date, recurring_type, recurring_end_date, parent_id } = req.body;
 
         if (!title) {
-            return res.status(400).json({ success: false, message: 'Tiêu đề task là bắt buộc' });
+            return res.status(400).json({ success: false, message: 'Task title is required' });
+        }
+
+        // Generate task_number for main tasks (not subtasks)
+        let task_number = null;
+        if (!parent_id) {
+            const year = new Date().getFullYear();
+            const yearStart = new Date(`${year}-01-01`);
+            const count = await PersonalTask.count({
+                where: {
+                    user_id: req.user.id,
+                    parent_id: null,
+                    created_at: { [Op.gte]: yearStart }
+                }
+            });
+            task_number = `${year}-MyTask-${String(count + 1).padStart(4, '0')}`;
         }
 
         const task = await PersonalTask.create({
+            task_number,
             title,
             description,
             category_id,
@@ -126,7 +142,7 @@ const create = async (req, res) => {
         res.status(201).json({ success: true, data: fullTask });
     } catch (error) {
         console.error('Create personal task error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi tạo task' });
+        res.status(500).json({ success: false, message: 'Error creating task' });
     }
 };
 
@@ -138,7 +154,7 @@ const update = async (req, res) => {
         });
 
         if (!task) {
-            return res.status(404).json({ success: false, message: 'Task không tồn tại' });
+            return res.status(404).json({ success: false, message: 'Task not found' });
         }
 
         const { title, description, category_id, priority, status, due_date, recurring_type, recurring_end_date } = req.body;
@@ -181,7 +197,7 @@ const update = async (req, res) => {
         res.json({ success: true, data: fullTask });
     } catch (error) {
         console.error('Update personal task error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi cập nhật task' });
+        res.status(500).json({ success: false, message: 'Error updating task' });
     }
 };
 
@@ -193,7 +209,7 @@ const updateStatus = async (req, res) => {
         });
 
         if (!task) {
-            return res.status(404).json({ success: false, message: 'Task không tồn tại' });
+            return res.status(404).json({ success: false, message: 'Task not found' });
         }
 
         const { status } = req.body;
@@ -237,7 +253,7 @@ const updateStatus = async (req, res) => {
         res.json({ success: true, data: fullTask });
     } catch (error) {
         console.error('Update personal task status error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi cập nhật trạng thái task' });
+        res.status(500).json({ success: false, message: 'Error updating task status' });
     }
 };
 
@@ -270,8 +286,21 @@ const createNextRecurringTask = async (originalTask) => {
         return;
     }
 
+    // Generate task_number for recurring task
+    const year = nextDueDate.getFullYear();
+    const yearStart = new Date(`${year}-01-01`);
+    const count = await PersonalTask.count({
+        where: {
+            user_id: originalTask.user_id,
+            parent_id: null,
+            created_at: { [Op.gte]: yearStart }
+        }
+    });
+    const task_number = `${year}-MyTask-${String(count + 1).padStart(4, '0')}`;
+
     // Create new task
     await PersonalTask.create({
+        task_number,
         title: originalTask.title,
         description: originalTask.description,
         category_id: originalTask.category_id,
@@ -292,7 +321,7 @@ const deleteTask = async (req, res) => {
         });
 
         if (!task) {
-            return res.status(404).json({ success: false, message: 'Task không tồn tại' });
+            return res.status(404).json({ success: false, message: 'Task not found' });
         }
 
         // Delete subtasks first
@@ -301,10 +330,10 @@ const deleteTask = async (req, res) => {
         // Delete the task
         await task.destroy();
 
-        res.json({ success: true, message: 'Đã xóa task thành công' });
+        res.json({ success: true, message: 'Task deleted successfully' });
     } catch (error) {
         console.error('Delete personal task error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi xóa task' });
+        res.status(500).json({ success: false, message: 'Error deleting task' });
     }
 };
 
@@ -335,7 +364,7 @@ const getStats = async (req, res) => {
         });
     } catch (error) {
         console.error('Get personal task stats error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy thống kê' });
+        res.status(500).json({ success: false, message: 'Error fetching statistics' });
     }
 };
 

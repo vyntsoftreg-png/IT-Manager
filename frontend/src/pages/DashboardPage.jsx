@@ -221,7 +221,7 @@ const DashboardPage = () => {
         },
         legend: { position: 'bottom' },
         statistic: {
-            title: { content: 'Tổng' },
+            title: { content: 'Total' },
             content: { content: ipStats.total.toString() },
         },
     };

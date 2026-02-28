@@ -26,14 +26,15 @@ router.post('/request', async (req, res) => {
         if (!requester_name || !title || !description) {
             return res.status(400).json({
                 success: false,
-                message: 'Vui lòng điền đầy đủ thông tin bắt buộc',
+                message: 'Please fill in all required fields',
             });
         }
 
         // Generate task number
         const year = new Date().getFullYear();
-        const count = await Task.count();
-        const task_number = `TASK-${year}-${String(count + 1).padStart(4, '0')}`;
+        const yearStart = new Date(`${year}-01-01`);
+        const count = await Task.count({ where: { created_at: { [Op.gte]: yearStart } } });
+        const task_number = `${year}-Task-${String(count + 1).padStart(4, '0')}`;
 
         const task = await Task.create({
             task_number,
@@ -83,7 +84,7 @@ router.post('/request', async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: 'Yêu cầu đã được gửi thành công',
+            message: 'Request submitted successfully',
             data: {
                 task_number: task.task_number,
                 id: task.id,
@@ -93,7 +94,7 @@ router.post('/request', async (req, res) => {
         console.error('Create support request error:', error);
         res.status(500).json({
             success: false,
-            message: 'Không thể gửi yêu cầu. Vui lòng thử lại.',
+            message: 'Unable to submit request. Please try again.',
         });
     }
 });
@@ -110,14 +111,14 @@ router.get('/status/:taskNumber', async (req, res) => {
         if (!task) {
             return res.status(404).json({
                 success: false,
-                message: 'Không tìm thấy yêu cầu',
+                message: 'Request not found',
             });
         }
 
         res.json({ success: true, data: task });
     } catch (error) {
         console.error('Check status error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi kiểm tra trạng thái' });
+        res.status(500).json({ success: false, message: 'Error checking status' });
     }
 });
 

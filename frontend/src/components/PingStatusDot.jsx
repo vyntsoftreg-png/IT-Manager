@@ -26,22 +26,22 @@ const PingStatusDot = ({
         },
         blocked: {
             className: 'ping-dot-blocked',
-            label: 'Online (Chặn ICMP)',
+            label: 'Online (ICMP Blocked)',
             color: '#faad14',
         },
         unknown: {
             className: 'ping-dot-unknown',
-            label: 'Chưa kiểm tra',
+            label: 'Not Checked',
             color: '#8c8c8c',
         },
         checking: {
             className: 'ping-dot-checking',
-            label: 'Đang kiểm tra...',
+            label: 'Checking...',
             color: '#1677ff',
         },
         error: {
             className: 'ping-dot-error',
-            label: 'Lỗi',
+            label: 'Error',
             color: '#ff4d4f',
         },
     };
@@ -57,8 +57,8 @@ const PingStatusDot = ({
             {mac && <div style={{ fontSize: 11, color: '#aaa' }}>MAC: {mac}</div>}
             {hasConflict && previousMac && (
                 <div style={{ color: '#ff4d4f', marginTop: 4 }}>
-                    <WarningOutlined /> Xung đột IP!<br />
-                    <span style={{ fontSize: 11 }}>MAC trước: {previousMac}</span>
+                    <WarningOutlined /> IP Conflict!<br />
+                    <span style={{ fontSize: 11 }}>Previous MAC: {previousMac}</span>
                 </div>
             )}
         </div>

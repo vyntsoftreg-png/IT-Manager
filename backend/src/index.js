@@ -98,8 +98,38 @@ const startServer = async () => {
             }
         } catch (e) { /* table may not exist yet, sync will create it */ }
 
+        // Migrate: add task_number column to personal_tasks if missing
+        try {
+            const [ptCols] = await sequelize.query("PRAGMA table_info('personal_tasks')");
+            if (!ptCols.find(c => c.name === 'task_number')) {
+                await sequelize.query("ALTER TABLE personal_tasks ADD COLUMN task_number VARCHAR(30)");
+                console.log('✅ Added task_number column to personal_tasks');
+            }
+        } catch (e) { /* table may not exist yet, sync will create it */ }
+
         await sequelize.sync();
         console.log('✅ Database synchronized');
+
+        // Migrate: assign task_numbers to existing personal tasks without one
+        try {
+            const { PersonalTask } = require('./models');
+            const tasksWithoutNumber = await PersonalTask.findAll({
+                where: { task_number: null, parent_id: null },
+                order: [['created_at', 'ASC']]
+            });
+            if (tasksWithoutNumber.length > 0) {
+                console.log(`🔄 Assigning task_numbers to ${tasksWithoutNumber.length} personal tasks...`);
+                for (let i = 0; i < tasksWithoutNumber.length; i++) {
+                    const task = tasksWithoutNumber[i];
+                    const year = new Date(task.created_at).getFullYear();
+                    const task_number = `${year}-MyTask-${String(i + 1).padStart(4, '0')}`;
+                    await task.update({ task_number });
+                }
+                console.log('✅ Personal task numbers assigned');
+            }
+        } catch (e) {
+            console.error('Migration error (personal task numbers):', e.message);
+        }
 
         // Background: generate thumbnails for existing documents without one
         (async () => {

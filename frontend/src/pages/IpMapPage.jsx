@@ -85,76 +85,76 @@ const IpMapPage = () => {
     const createSegmentMutation = useMutation({
         mutationFn: segmentService.createSegment,
         onSuccess: (data) => {
-            message.success(data.message || 'Tạo dải mạng thành công!');
+            message.success(data.message || 'Subnet created successfully!');
             queryClient.invalidateQueries(['segments']);
             handleCloseSegmentModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const updateSegmentMutation = useMutation({
         mutationFn: ({ id, data }) => segmentService.updateSegment(id, data),
         onSuccess: () => {
-            message.success('Cập nhật dải mạng thành công!');
+            message.success('Subnet updated successfully!');
             queryClient.invalidateQueries(['segments']);
             handleCloseSegmentModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const deleteSegmentMutation = useMutation({
         mutationFn: segmentService.deleteSegment,
         onSuccess: () => {
-            message.success('Xóa dải mạng thành công!');
+            message.success('Subnet deleted successfully!');
             queryClient.invalidateQueries(['segments']);
             if (selectedSegment?.id === editingSegment?.id) {
                 setSelectedSegment(null);
             }
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const assignIpMutation = useMutation({
         mutationFn: ({ ipId, data }) => ipService.assignIpToDevice(ipId, data),
         onSuccess: () => {
-            message.success('Gán IP thành công!');
+            message.success('IP assigned successfully!');
             queryClient.invalidateQueries(['ips']);
             queryClient.invalidateQueries(['segments']);
             setIsAssignModalOpen(false);
             assignForm.resetFields();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const releaseIpMutation = useMutation({
         mutationFn: ipService.releaseIp,
         onSuccess: () => {
-            message.success('Giải phóng IP thành công!');
+            message.success('IP released successfully!');
             queryClient.invalidateQueries(['ips']);
             queryClient.invalidateQueries(['segments']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const updateIpMutation = useMutation({
         mutationFn: ({ id, data }) => ipService.updateIpAddress(id, data),
         onSuccess: () => {
-            message.success('Cập nhật IP thành công!');
+            message.success('IP updated successfully!');
             queryClient.invalidateQueries(['ips']);
             queryClient.invalidateQueries(['segments']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
@@ -524,13 +524,13 @@ const IpMapPage = () => {
                                 />
                             </Tooltip>
                             <Popconfirm
-                                title="Giải phóng IP"
-                                description="IP và tất cả thông tin liên quan sẽ được xóa"
+                                title="Release IP"
+                                description="IP and all related information will be removed"
                                 onConfirm={() => handleReleaseIp(record.id)}
-                                okText="Xác nhận"
-                                cancelText="Hủy"
+                                okText="Confirm"
+                                cancelText="Cancel"
                             >
-                                <Tooltip title="Giải phóng">
+                                <Tooltip title="Release">
                                     <Button
                                         size="small"
                                         danger
@@ -544,7 +544,7 @@ const IpMapPage = () => {
 
                 if (record.status === 'blocked') {
                     return (
-                        <Tooltip title="Mở khóa">
+                        <Tooltip title="Unlock">
                             <Button
                                 size="small"
                                 icon={<LockOutlined />}
@@ -619,13 +619,13 @@ const IpMapPage = () => {
                                                     }}
                                                 />
                                                 <Text type="secondary" style={{ fontSize: 11 }}>
-                                                    {segment.stats?.used || 0} / {segment.stats?.total || 0} sử dụng
+                                                    {segment.stats?.used || 0} / {segment.stats?.total || 0} used
                                                 </Text>
                                             </div>
                                         </div>
                                         {canEdit && (
                                             <Space className="segment-actions" onClick={(e) => e.stopPropagation()}>
-                                                <Tooltip title="Sửa">
+                                                <Tooltip title="Edit">
                                                     <Button
                                                         type="text"
                                                         size="small"
@@ -634,14 +634,14 @@ const IpMapPage = () => {
                                                     />
                                                 </Tooltip>
                                                 <Popconfirm
-                                                    title="Xóa dải mạng"
-                                                    description="Tất cả IP trong dải sẽ bị xóa"
+                                                    title="Delete subnet"
+                                                    description="All IPs in this subnet will be deleted"
                                                     onConfirm={() => handleDeleteSegment(segment.id)}
-                                                    okText="Xóa"
-                                                    cancelText="Hủy"
+                                                    okText="Delete"
+                                                    cancelText="Cancel"
                                                     okButtonProps={{ danger: true }}
                                                 >
-                                                    <Tooltip title="Xóa">
+                                                    <Tooltip title="Delete">
                                                         <Button
                                                             type="text"
                                                             size="small"
@@ -667,7 +667,7 @@ const IpMapPage = () => {
                                 <Row gutter={[16, 16]} align="middle">
                                     <Col xs={24} sm={12} md={8}>
                                         <Input.Search
-                                            placeholder="Tìm IP, hostname, MAC..."
+                                            placeholder="Search IP, hostname, MAC..."
                                             onSearch={(value) => handleIpFilterChange('search', value)}
                                             allowClear
                                             prefix={<SearchOutlined />}
@@ -675,7 +675,7 @@ const IpMapPage = () => {
                                     </Col>
                                     <Col xs={12} sm={6} md={4}>
                                         <Select
-                                            placeholder="Trạng thái"
+                                            placeholder="Status"
                                             allowClear
                                             style={{ width: '100%' }}
                                             value={ipFilters.status}
@@ -690,20 +690,20 @@ const IpMapPage = () => {
                                     </Col>
                                     <Col xs={12} sm={6} md={4}>
                                         <Select
-                                            placeholder="Trạng thái mạng"
+                                            placeholder="Network status"
                                             allowClear
                                             style={{ width: '100%' }}
                                             value={ipFilters.pingStatus}
                                             onChange={(value) => handleIpFilterChange('pingStatus', value)}
                                         >
                                             <Option value="online">🟢 Online</Option>
-                                            <Option value="blocked">🟡 Chặn ICMP</Option>
+                                            <Option value="blocked">🟡 ICMP Blocked</Option>
                                             <Option value="offline">🔴 Offline</Option>
-                                            <Option value="unregistered">⚠️ Chưa đăng ký</Option>
+                                            <Option value="unregistered">⚠️ Unregistered</Option>
                                         </Select>
                                     </Col>
                                     <Col>
-                                        <Tooltip title="Làm mới">
+                                        <Tooltip title="Refresh">
                                             <Button icon={<ReloadOutlined />} onClick={() => refetchIps()} />
                                         </Tooltip>
                                     </Col>
@@ -717,7 +717,7 @@ const IpMapPage = () => {
                                             <Space>
                                                 <Tag color="green">Online: {pingStats.online}</Tag>
                                                 {pingStats.blocked > 0 && (
-                                                    <Tag color="orange">Chặn ICMP: {pingStats.blocked}</Tag>
+                                                    <Tag color="orange">ICMP Blocked: {pingStats.blocked}</Tag>
                                                 )}
                                                 <Tag color="red">Offline: {pingStats.offline}</Tag>
                                                 {unregisteredDevices.length > 0 && (
@@ -726,7 +726,7 @@ const IpMapPage = () => {
                                                         style={{ cursor: 'pointer', fontWeight: 'bold' }}
                                                         onClick={() => handleIpFilterChange('pingStatus', 'unregistered')}
                                                     >
-                                                        ⚠️ Chưa đăng ký: {unregisteredDevices.length}
+                                                        ⚠️ Unregistered: {unregisteredDevices.length}
                                                     </Tag>
                                                 )}
                                                 {pingStats.avgResponseTime > 0 && (
@@ -762,7 +762,7 @@ const IpMapPage = () => {
                                         total: effectivePagination.total,
                                         showSizeChanger: true,
                                         pageSizeOptions: ['20', '50', '100', '200'],
-                                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} IP`,
+                                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} IPs`,
                                     }}
                                     onChange={handleTableChange}
                                 />
@@ -770,7 +770,7 @@ const IpMapPage = () => {
                         </>
                     ) : (
                         <Card bordered={false}>
-                            <Empty description="Chọn một dải mạng để xem danh sách IP" />
+                            <Empty description="Select a subnet to view IP list" />
                         </Card>
                     )}
                 </Col>
@@ -778,7 +778,7 @@ const IpMapPage = () => {
 
             {/* Add/Edit Segment Modal */}
             <Modal
-                title={editingSegment ? 'Sửa dải mạng' : 'Thêm dải mạng mới'}
+                title={editingSegment ? 'Edit Subnet' : 'Add New Subnet'}
                 open={isSegmentModalOpen}
                 onCancel={handleCloseSegmentModal}
                 footer={null}
@@ -794,10 +794,10 @@ const IpMapPage = () => {
                         <Col span={12}>
                             <Form.Item
                                 name="name"
-                                label="Tên dải mạng"
-                                rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+                                label="Subnet Name"
+                                rules={[{ required: true, message: 'Please enter a name' }]}
                             >
-                                <Input placeholder="VD: Office LAN, Server VLAN" />
+                                <Input placeholder="e.g. Office LAN, Server VLAN" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -805,7 +805,7 @@ const IpMapPage = () => {
                                 name="vlan_id"
                                 label="VLAN ID"
                             >
-                                <Input type="number" placeholder="VD: 10, 20, 100" />
+                                <Input type="number" placeholder="e.g. 10, 20, 100" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -814,13 +814,13 @@ const IpMapPage = () => {
                         name="cidr"
                         label="CIDR"
                         rules={[
-                            { required: true, message: 'Vui lòng nhập CIDR' },
+                            { required: true, message: 'Please enter CIDR' },
                             { pattern: /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/, message: 'Format: 192.168.1.0/24' },
                         ]}
-                        extra={!editingSegment && "Hệ thống sẽ tự động tạo danh sách IP từ CIDR"}
+                        extra={!editingSegment && "System will automatically generate IP list from CIDR"}
                     >
                         <Input
-                            placeholder="VD: 192.168.1.0/24"
+                            placeholder="e.g. 192.168.1.0/24"
                             disabled={!!editingSegment}
                         />
                     </Form.Item>
@@ -828,38 +828,38 @@ const IpMapPage = () => {
                     <Row gutter={16}>
                         <Col span={8}>
                             <Form.Item name="gateway" label="Gateway">
-                                <Input placeholder="VD: 192.168.1.1" />
+                                <Input placeholder="e.g. 192.168.1.1" />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item name="dns_primary" label="DNS Primary">
-                                <Input placeholder="VD: 8.8.8.8" />
+                                <Input placeholder="e.g. 8.8.8.8" />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item name="dns_secondary" label="DNS Secondary">
-                                <Input placeholder="VD: 8.8.4.4" />
+                                <Input placeholder="e.g. 8.8.4.4" />
                             </Form.Item>
                         </Col>
                     </Row>
 
                     <Form.Item name="tags" label="Tags">
-                        <Input placeholder="VD: office, server, wifi (phân cách bằng dấu phẩy)" />
+                        <Input placeholder="e.g. office, server, wifi (comma separated)" />
                     </Form.Item>
 
-                    <Form.Item name="description" label="Mô tả">
-                        <Input.TextArea rows={2} placeholder="Mô tả thêm về dải mạng..." />
+                    <Form.Item name="description" label="Description">
+                        <Input.TextArea rows={2} placeholder="Additional description for this subnet..." />
                     </Form.Item>
 
                     <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                         <Space>
-                            <Button onClick={handleCloseSegmentModal}>Hủy</Button>
+                            <Button onClick={handleCloseSegmentModal}>Cancel</Button>
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 loading={createSegmentMutation.isPending || updateSegmentMutation.isPending}
                             >
-                                {editingSegment ? 'Cập nhật' : 'Tạo dải mạng'}
+                                {editingSegment ? 'Update' : 'Create Subnet'}
                             </Button>
                         </Space>
                     </Form.Item>
@@ -906,11 +906,11 @@ const IpMapPage = () => {
                     </Form.Item>
 
                     <Form.Item name="hostname" label={t('devices.hostname')}>
-                        <Input placeholder="VD: PC-KETOAN-01" />
+                        <Input placeholder="e.g. PC-ACCOUNTING-01" />
                     </Form.Item>
 
                     <Form.Item name="mac_address" label={t('devices.macAddress')}>
-                        <Input placeholder="VD: AA:BB:CC:DD:EE:FF" />
+                        <Input placeholder="e.g. AA:BB:CC:DD:EE:FF" />
                     </Form.Item>
 
                     <Form.Item name="notes" label={t('common.notes')}>

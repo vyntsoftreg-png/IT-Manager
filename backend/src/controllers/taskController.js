@@ -99,8 +99,18 @@ const getTaskById = async (req, res) => {
 // Create new task (support request)
 const createTask = async (req, res) => {
     try {
+        // Generate task_number if not provided
+        let task_number = req.body.task_number;
+        if (!task_number) {
+            const year = new Date().getFullYear();
+            const yearStart = new Date(`${year}-01-01`);
+            const count = await Task.count({ where: { created_at: { [Op.gte]: yearStart } } });
+            task_number = `${year}-Task-${String(count + 1).padStart(4, '0')}`;
+        }
+
         const taskData = {
             ...req.body,
+            task_number,
             created_by: req.user?.id || null,
         };
 
@@ -526,19 +536,19 @@ const exportTasks = async (req, res) => {
             ).join(' | ') || '';
 
             return {
-                'Mã yêu cầu': t.task_number,
-                'Tiêu đề': t.title,
-                'Mô tả': t.description || '',
-                'Loại': t.category,
-                'Mức độ': t.priority,
-                'Trạng thái': t.status,
-                'Người yêu cầu': t.requester_name,
+                'Request ID': t.task_number,
+                'Title': t.title,
+                'Description': t.description || '',
+                'Category': t.category,
+                'Priority': t.priority,
+                'Status': t.status,
+                'Requester': t.requester_name,
                 'Email': t.requester_email,
-                'Phòng ban': t.requester_department,
-                'Người xử lý': t.assignee?.display_name || '',
-                'Ghi chú': notes,
-                'Ngày tạo': t.created_at,
-                'Ngày hoàn thành': t.resolved_at || '',
+                'Department': t.requester_department,
+                'Assignee': t.assignee?.display_name || '',
+                'Notes': notes,
+                'Created At': t.created_at,
+                'Resolved At': t.resolved_at || '',
             };
         });
 

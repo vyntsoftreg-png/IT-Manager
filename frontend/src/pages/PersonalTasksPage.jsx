@@ -225,6 +225,15 @@ const PersonalTasksPage = () => {
     // Table columns
     const columns = [
         {
+            title: 'ID',
+            dataIndex: 'task_number',
+            key: 'task_number',
+            width: 160,
+            render: (text) => text ? (
+                <Text code style={{ fontSize: 12 }}>{text}</Text>
+            ) : '-'
+        },
+        {
             title: t('personalTasks.task'),
             dataIndex: 'title',
             key: 'title',
@@ -376,6 +385,9 @@ const PersonalTasksPage = () => {
                                     </Popconfirm>
                                 ].filter(Boolean)}
                             >
+                                {task.task_number && (
+                                    <Text code style={{ fontSize: 11, marginBottom: 4, display: 'block' }}>{task.task_number}</Text>
+                                )}
                                 <Text strong>{task.title}</Text>
                                 {task.category && (
                                     <div><Tag size="small" color={task.category.color}>{task.category.name}</Tag></div>
@@ -609,7 +621,7 @@ const PersonalTasksPage = () => {
                         label={t('common.name')}
                         rules={[{ required: true, message: t('validation.required') }]}
                     >
-                        <Input placeholder="Ví dụ: Công việc, Cá nhân, Dự án X..." />
+                        <Input placeholder="e.g. Work, Personal, Project X..." />
                     </Form.Item>
 
                     <Row gutter={16}>

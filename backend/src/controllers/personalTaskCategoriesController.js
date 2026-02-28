@@ -11,7 +11,7 @@ const getAll = async (req, res) => {
         res.json({ success: true, data: categories });
     } catch (error) {
         console.error('Get categories error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách category' });
+        res.status(500).json({ success: false, message: 'Error fetching category list' });
     }
 };
 
@@ -34,7 +34,7 @@ const create = async (req, res) => {
         res.status(201).json({ success: true, data: category });
     } catch (error) {
         console.error('Create category error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi tạo category' });
+        res.status(500).json({ success: false, message: 'Error creating category' });
     }
 };
 
@@ -59,7 +59,7 @@ const update = async (req, res) => {
         res.json({ success: true, data: category });
     } catch (error) {
         console.error('Update category error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi cập nhật category' });
+        res.status(500).json({ success: false, message: 'Error updating category' });
     }
 };
 
@@ -75,10 +75,10 @@ const deleteCategory = async (req, res) => {
         }
 
         await category.destroy();
-        res.json({ success: true, message: 'Đã xóa category thành công' });
+        res.json({ success: true, message: 'Category deleted successfully' });
     } catch (error) {
         console.error('Delete category error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi xóa category' });
+        res.status(500).json({ success: false, message: 'Error deleting category' });
     }
 };
 

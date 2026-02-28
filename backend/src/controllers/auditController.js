@@ -117,12 +117,12 @@ const getAuditLog = async (req, res) => {
 // Get available actions for filter dropdown
 const getActions = async (req, res) => {
     const actions = [
-        { value: 'create', label: 'Tạo mới', color: 'green' },
-        { value: 'update', label: 'Cập nhật', color: 'blue' },
-        { value: 'delete', label: 'Xóa', color: 'red' },
-        { value: 'login', label: 'Đăng nhập', color: 'cyan' },
-        { value: 'logout', label: 'Đăng xuất', color: 'gray' },
-        { value: 'reveal_password', label: 'Xem mật khẩu', color: 'orange' },
+        { value: 'create', label: 'Create', color: 'green' },
+        { value: 'update', label: 'Update', color: 'blue' },
+        { value: 'delete', label: 'Delete', color: 'red' },
+        { value: 'login', label: 'Login', color: 'cyan' },
+        { value: 'logout', label: 'Logout', color: 'gray' },
+        { value: 'reveal_password', label: 'View Password', color: 'orange' },
         { value: 'import', label: 'Import', color: 'purple' },
     ];
 
@@ -135,11 +135,11 @@ const getActions = async (req, res) => {
 // Get entity types for filter dropdown
 const getEntityTypes = async (req, res) => {
     const entityTypes = [
-        { value: 'devices', label: 'Thiết bị' },
-        { value: 'ip_addresses', label: 'Địa chỉ IP' },
-        { value: 'network_segments', label: 'Dải mạng' },
-        { value: 'admin_accounts', label: 'Tài khoản Admin' },
-        { value: 'users', label: 'Người dùng' },
+        { value: 'devices', label: 'Devices' },
+        { value: 'ip_addresses', label: 'IP Addresses' },
+        { value: 'network_segments', label: 'Network Segments' },
+        { value: 'admin_accounts', label: 'Admin Accounts' },
+        { value: 'users', label: 'Users' },
     ];
 
     res.json({

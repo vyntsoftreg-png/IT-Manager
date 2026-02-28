@@ -116,7 +116,7 @@ const IconPicker = ({ value, onChange }) => {
                             <span style={{ fontSize: 12 }}>{value.replace('Outlined', '')}</span>
                         </Space>
                     ) : (
-                        'Chọn icon'
+                        'Select icon'
                     )}
                 </Button>
                 {value && (

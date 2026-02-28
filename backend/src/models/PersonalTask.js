@@ -7,6 +7,11 @@ const PersonalTask = sequelize.define('PersonalTask', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
+    task_number: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+        unique: true,
+    },
     title: {
         type: DataTypes.STRING(255),
         allowNull: false,

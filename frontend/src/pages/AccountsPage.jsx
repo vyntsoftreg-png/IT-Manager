@@ -104,47 +104,47 @@ const AccountsPage = () => {
     const createMutation = useMutation({
         mutationFn: accountService.createAccount,
         onSuccess: () => {
-            message.success('Tạo tài khoản thành công!');
+            message.success('Account created successfully!');
             queryClient.invalidateQueries(['accounts']);
             handleCloseModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const updateMutation = useMutation({
         mutationFn: ({ id, data }) => accountService.updateAccount(id, data),
         onSuccess: () => {
-            message.success('Cập nhật tài khoản thành công!');
+            message.success('Account updated successfully!');
             queryClient.invalidateQueries(['accounts']);
             handleCloseModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const deleteMutation = useMutation({
         mutationFn: accountService.deleteAccount,
         onSuccess: () => {
-            message.success('Xóa tài khoản thành công!');
+            message.success('Account deleted successfully!');
             queryClient.invalidateQueries(['accounts']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const bulkDeleteMutation = useMutation({
         mutationFn: (ids) => accountService.bulkDelete(ids),
         onSuccess: (data) => {
-            message.success(`Đã xóa ${data.deleted || selectedRowKeys.length} tài khoản!`);
+            message.success(`Deleted ${data.deleted || selectedRowKeys.length} account(s)!`);
             setSelectedRowKeys([]);
             queryClient.invalidateQueries(['accounts']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
@@ -216,7 +216,7 @@ const AccountsPage = () => {
     // Handle reveal password
     const handleRevealPassword = async () => {
         if (!revealPassword) {
-            message.error('Vui lòng nhập mật khẩu xác thực');
+            message.error('Please enter your authentication password');
             return;
         }
 
@@ -226,9 +226,9 @@ const AccountsPage = () => {
             setRevealedPassword(result.data.password);
             setIsRevealModalOpen(false);
             setRevealPassword('');
-            message.success('Xác thực thành công!');
+            message.success('Authentication successful!');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Xác thực thất bại');
+            message.error(error.response?.data?.message || 'Authentication failed');
         } finally {
             setRevealLoading(false);
         }
@@ -237,7 +237,7 @@ const AccountsPage = () => {
     const handleCopyPassword = () => {
         if (revealedPassword) {
             navigator.clipboard.writeText(revealedPassword);
-            message.success('Đã sao chép mật khẩu!');
+            message.success('Password copied!');
         }
     };
 
@@ -249,7 +249,7 @@ const AccountsPage = () => {
     // Export handlers
     const handleExport = async () => {
         if (!exportPassword) {
-            message.error('Vui lòng nhập mật khẩu xác thực');
+            message.error('Please enter your authentication password');
             return;
         }
 
@@ -267,9 +267,9 @@ const AccountsPage = () => {
 
             setIsExportModalOpen(false);
             setExportPassword('');
-            message.success('Xuất file thành công!');
+            message.success('File exported successfully!');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Xuất file thất bại');
+            message.error(error.response?.data?.message || 'Export failed');
         } finally {
             setExportLoading(false);
         }
@@ -286,9 +286,9 @@ const AccountsPage = () => {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            message.success('Tải template thành công!');
+            message.success('Template downloaded successfully!');
         } catch (error) {
-            message.error('Tải template thất bại');
+            message.error('Failed to download template');
         }
     };
 
@@ -334,9 +334,9 @@ const AccountsPage = () => {
                 const text = e.target.result;
                 const data = parseCSV(text);
                 setImportData(data);
-                message.success(`Đã đọc ${data.length} tài khoản từ file`);
+                message.success(`Read ${data.length} account(s) from file`);
             } catch (error) {
-                message.error('Không thể đọc file CSV');
+                message.error('Unable to read CSV file');
             }
         };
         reader.readAsText(file, 'UTF-8');
@@ -345,7 +345,7 @@ const AccountsPage = () => {
 
     const handleImport = async () => {
         if (importData.length === 0) {
-            message.error('Chưa có dữ liệu để import');
+            message.error('No data to import');
             return;
         }
 
@@ -357,7 +357,7 @@ const AccountsPage = () => {
             setImportData([]);
             refetch();
         } catch (error) {
-            message.error(error.response?.data?.message || 'Import thất bại');
+            message.error(error.response?.data?.message || 'Import failed');
         } finally {
             setImportLoading(false);
         }
@@ -563,7 +563,7 @@ const AccountsPage = () => {
                         </Select>
                     </Col>
                     <Col>
-                        <Tooltip title="Làm mới">
+                        <Tooltip title="Refresh">
                             <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
                         </Tooltip>
                     </Col>
@@ -574,19 +574,19 @@ const AccountsPage = () => {
             <Card bordered={false} className="table-card">
                 {selectedRowKeys.length > 0 && (
                     <div style={{ marginBottom: 16, padding: '12px 16px', background: '#1890ff10', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text>Đã chọn <Text strong>{selectedRowKeys.length}</Text> tài khoản</Text>
+                        <Text>Selected <Text strong>{selectedRowKeys.length}</Text> account(s)</Text>
                         <Space>
-                            <Button size="small" onClick={() => setSelectedRowKeys([])}>Bỏ chọn</Button>
+                            <Button size="small" onClick={() => setSelectedRowKeys([])}>Deselect</Button>
                             <Popconfirm
-                                title="Xóa nhiều tài khoản"
-                                description={`Bạn có chắc chắn muốn xóa ${selectedRowKeys.length} tài khoản đã chọn?`}
+                                title="Delete multiple accounts"
+                                description={`Are you sure you want to delete ${selectedRowKeys.length} selected account(s)?`}
                                 onConfirm={() => bulkDeleteMutation.mutate(selectedRowKeys)}
-                                okText="Xóa"
-                                cancelText="Hủy"
+                                okText="Delete"
+                                cancelText="Cancel"
                                 okButtonProps={{ danger: true, loading: bulkDeleteMutation.isPending }}
                             >
                                 <Button danger size="small" icon={<DeleteOutlined />}>
-                                    Xóa tất cả
+                                    Delete All
                                 </Button>
                             </Popconfirm>
                         </Space>
@@ -608,7 +608,7 @@ const AccountsPage = () => {
                         total: pagination.total,
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '50'],
-                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} tài khoản`,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} accounts`,
                     }}
                     onChange={handleTableChange}
                 />
@@ -616,7 +616,7 @@ const AccountsPage = () => {
 
             {/* Add/Edit Modal */}
             <Modal
-                title={editingAccount ? 'Sửa tài khoản' : 'Thêm tài khoản mới'}
+                title={editingAccount ? 'Edit Account' : 'Add New Account'}
                 open={isModalOpen}
                 onCancel={handleCloseModal}
                 footer={null}
@@ -635,7 +635,7 @@ const AccountsPage = () => {
                                 label={t('accounts.systemName')}
                                 rules={[{ required: true, message: t('validation.systemNameRequired') }]}
                             >
-                                <Input placeholder="VD: Firewall HQ, vCenter DC1" />
+                                <Input placeholder="e.g. Firewall HQ, vCenter DC1" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -663,9 +663,9 @@ const AccountsPage = () => {
                             <Form.Item
                                 name="username"
                                 label="Username"
-                                rules={[{ required: true, message: 'Vui lòng nhập username' }]}
+                                rules={[{ required: true, message: 'Please enter username' }]}
                             >
-                                <Input placeholder="VD: admin, root, administrator" />
+                                <Input placeholder="e.g. admin, root, administrator" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -688,7 +688,7 @@ const AccountsPage = () => {
                         name="admin_url"
                         label="URL Admin"
                     >
-                        <Input placeholder="VD: https://192.168.1.1:8443, https://vcenter.local" />
+                        <Input placeholder="e.g. https://192.168.1.1:8443, https://vcenter.local" />
                     </Form.Item>
 
                     <Form.Item
@@ -899,7 +899,7 @@ const AccountsPage = () => {
                     style={{ marginBottom: 16 }}
                 />
                 <Input.Password
-                    placeholder="Nhập mật khẩu của bạn để xác thực"
+                    placeholder="Enter your password to authenticate"
                     value={exportPassword}
                     onChange={(e) => setExportPassword(e.target.value)}
                     onPressEnter={handleExport}
@@ -911,7 +911,7 @@ const AccountsPage = () => {
                 title={
                     <Space>
                         <UploadOutlined />
-                        Nhập tài khoản từ CSV
+                        Import Accounts from CSV
                     </Space>
                 }
                 open={isImportModalOpen}
@@ -920,26 +920,26 @@ const AccountsPage = () => {
                     setImportData([]);
                 }}
                 onOk={handleImport}
-                okText={`Nhập ${importData.length} tài khoản`}
-                cancelText="Hủy"
+                okText={`Import ${importData.length} account(s)`}
+                cancelText="Cancel"
                 confirmLoading={importLoading}
                 okButtonProps={{ disabled: importData.length === 0 }}
                 width={700}
             >
                 <Alert
-                    message="Hướng dẫn"
+                    message="Instructions"
                     description={
                         <div>
-                            <p>1. Tải file template CSV và điền thông tin tài khoản</p>
-                            <p>2. Upload file CSV đã điền</p>
-                            <p>3. Kiểm tra dữ liệu và nhấn "Nhập"</p>
+                            <p>1. Download the CSV template and fill in account information</p>
+                            <p>2. Upload the completed CSV file</p>
+                            <p>3. Review the data and click "Import"</p>
                             <Button
                                 type="link"
                                 icon={<DownloadOutlined />}
                                 onClick={handleDownloadTemplate}
                                 style={{ padding: 0 }}
                             >
-                                Tải file template
+                                Download Template
                             </Button>
                         </div>
                     }
@@ -957,20 +957,20 @@ const AccountsPage = () => {
                     <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Kéo thả file CSV vào đây</p>
-                    <p className="ant-upload-hint">Hoặc click để chọn file</p>
+                    <p className="ant-upload-text">Drag and drop CSV file here</p>
+                    <p className="ant-upload-hint">Or click to select file</p>
                 </Upload.Dragger>
 
                 {importData.length > 0 && (
                     <>
-                        <Divider>Preview ({importData.length} tài khoản)</Divider>
+                        <Divider>Preview ({importData.length} accounts)</Divider>
                         <Table
                             dataSource={importData.slice(0, 5)}
                             columns={[
-                                { title: 'Tên hệ thống', dataIndex: 'system_name', key: 'system_name', ellipsis: true },
-                                { title: 'Loại', dataIndex: 'system_type', key: 'system_type', width: 100 },
+                                { title: 'System Name', dataIndex: 'system_name', key: 'system_name', ellipsis: true },
+                                { title: 'Type', dataIndex: 'system_type', key: 'system_type', width: 100 },
                                 { title: 'Username', dataIndex: 'username', key: 'username', ellipsis: true },
-                                { title: 'Môi trường', dataIndex: 'environment', key: 'environment', width: 100 },
+                                { title: 'Environment', dataIndex: 'environment', key: 'environment', width: 100 },
                             ]}
                             rowKey={(_, index) => index}
                             size="small"
@@ -978,7 +978,7 @@ const AccountsPage = () => {
                         />
                         {importData.length > 5 && (
                             <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8 }}>
-                                ... và {importData.length - 5} tài khoản khác
+                                ... and {importData.length - 5} more account(s)
                             </Text>
                         )}
                     </>

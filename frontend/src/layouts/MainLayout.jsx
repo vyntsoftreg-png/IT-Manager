@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Dropdown, Avatar, Typography, theme } from 'antd';
+import { Layout, Menu, Button, Dropdown, Avatar, Typography, Tooltip, theme } from 'antd';
 import {
     DashboardOutlined,
     LaptopOutlined,
@@ -15,6 +15,7 @@ import {
     DatabaseOutlined,
     BookOutlined,
     CheckSquareOutlined,
+    EllipsisOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -46,60 +47,83 @@ const MainLayout = ({ children }) => {
             .catch(() => { });
     }, []);
 
-    const baseMenuItems = [
+    const menuItems = [
         {
-            key: '/',
-            icon: <DashboardOutlined />,
-            label: t('menu.dashboard'),
+            type: 'group',
+            label: !collapsed ? 'OVERVIEW' : null,
+            children: [
+                {
+                    key: '/',
+                    icon: <DashboardOutlined />,
+                    label: t('menu.dashboard'),
+                },
+            ],
         },
         {
-            key: '/devices',
-            icon: <LaptopOutlined />,
-            label: t('menu.devices'),
+            type: 'group',
+            label: !collapsed ? 'MANAGEMENT' : null,
+            children: [
+                {
+                    key: '/devices',
+                    icon: <LaptopOutlined />,
+                    label: t('menu.devices'),
+                },
+                {
+                    key: '/ip-map',
+                    icon: <GlobalOutlined />,
+                    label: t('menu.ipMap'),
+                },
+                {
+                    key: '/accounts',
+                    icon: <KeyOutlined />,
+                    label: t('menu.accounts'),
+                },
+            ],
         },
         {
-            key: '/ip-map',
-            icon: <GlobalOutlined />,
-            label: t('menu.ipMap'),
+            type: 'group',
+            label: !collapsed ? 'TASKS' : null,
+            children: [
+                {
+                    key: '/tasks',
+                    icon: <FileTextOutlined />,
+                    label: t('menu.tasks'),
+                },
+                {
+                    key: '/personal-tasks',
+                    icon: <CheckSquareOutlined />,
+                    label: t('menu.personalTasks') || 'Personal Tasks',
+                },
+            ],
         },
         {
-            key: '/accounts',
-            icon: <KeyOutlined />,
-            label: t('menu.accounts'),
+            type: 'group',
+            label: !collapsed ? 'RESOURCES' : null,
+            children: [
+                {
+                    key: '/documents',
+                    icon: <BookOutlined />,
+                    label: t('menu.documents') || 'Documents',
+                },
+            ],
         },
-        {
-            key: '/tasks',
-            icon: <FileTextOutlined />,
-            label: t('menu.tasks'),
-        },
-        {
-            key: '/personal-tasks',
-            icon: <CheckSquareOutlined />,
-            label: t('menu.personalTasks') || 'Việc của tôi',
-        },
-        {
-            key: '/documents',
-            icon: <BookOutlined />,
-            label: t('menu.documents') || 'Documents',
-        },
+        ...(user?.role === 'admin' ? [{
+            type: 'group',
+            label: !collapsed ? 'SYSTEM' : null,
+            children: [
+                {
+                    key: '/audit-logs',
+                    icon: <HistoryOutlined />,
+                    label: t('menu.auditLog'),
+                },
+                {
+                    key: '/backup',
+                    icon: <DatabaseOutlined />,
+                    label: t('menu.backup'),
+                },
+            ],
+        }] : []),
     ];
-
-    // Add audit logs menu for admin only
-    const menuItems = user?.role === 'admin'
-        ? [
-            ...baseMenuItems,
-            {
-                key: '/audit-logs',
-                icon: <HistoryOutlined />,
-                label: t('menu.auditLog'),
-            },
-            {
-                key: '/backup',
-                icon: <DatabaseOutlined />,
-                label: t('menu.backup'),
-            },
-        ]
-        : baseMenuItems;
 
     const userMenuItems = [
         {
@@ -140,9 +164,9 @@ const MainLayout = ({ children }) => {
 
     const getRoleBadge = (role) => {
         const roleConfig = {
-            admin: { color: '#f5222d', text: 'Admin' },
-            it_ops: { color: '#1890ff', text: 'IT Ops' },
-            viewer: { color: '#52c41a', text: 'Viewer' },
+            admin: { color: '#ef4444', text: 'Admin' },
+            it_ops: { color: '#3b82f6', text: 'IT Ops' },
+            viewer: { color: '#22c55e', text: 'Viewer' },
         };
         return roleConfig[role] || { color: '#999', text: role };
     };
@@ -155,21 +179,58 @@ const MainLayout = ({ children }) => {
                 trigger={null}
                 collapsible
                 collapsed={collapsed}
-                theme="light"
+                theme="dark"
                 className="main-sider"
-                width={240}
+                width={250}
+                collapsedWidth={72}
             >
+                {/* Logo */}
                 <div className="sider-logo">
                     <span className="logo-icon">{branding.app_logo}</span>
                     {!collapsed && <span className="logo-text">{branding.app_name}</span>}
                 </div>
-                <Menu
-                    mode="inline"
-                    selectedKeys={[location.pathname]}
-                    items={menuItems}
-                    onClick={handleMenuClick}
-                    className="sider-menu"
-                />
+
+                {/* Navigation */}
+                <div className="sider-nav">
+                    <Menu
+                        mode="inline"
+                        theme="dark"
+                        selectedKeys={[location.pathname]}
+                        items={menuItems}
+                        onClick={handleMenuClick}
+                        className="sider-menu"
+                    />
+                </div>
+
+                {/* User Profile at Bottom */}
+                <div className="sider-footer">
+                    <Dropdown
+                        menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
+                        placement="topRight"
+                        trigger={['click']}
+                    >
+                        <div className="sider-user">
+                            <Avatar
+                                size={collapsed ? 32 : 36}
+                                style={{ backgroundColor: roleBadge.color, flexShrink: 0 }}
+                                icon={<UserOutlined />}
+                            />
+                            {!collapsed && (
+                                <div className="sider-user-info">
+                                    <Text className="sider-user-name" ellipsis>
+                                        {user?.display_name || user?.username}
+                                    </Text>
+                                    <Text className="sider-user-role">
+                                        {roleBadge.text}
+                                    </Text>
+                                </div>
+                            )}
+                            {!collapsed && (
+                                <EllipsisOutlined className="sider-user-more" />
+                            )}
+                        </div>
+                    </Dropdown>
+                </div>
             </Sider>
             <Layout>
                 <Header className="main-header">
@@ -182,31 +243,6 @@ const MainLayout = ({ children }) => {
                     <GlobalSearch />
                     <div className="header-right">
                         <LanguageSwitcher />
-                        <Dropdown
-                            menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-                            placement="bottomRight"
-                            trigger={['click']}
-                        >
-                            <div className="user-dropdown">
-                                <Avatar
-                                    style={{ backgroundColor: token.colorPrimary }}
-                                    icon={<UserOutlined />}
-                                />
-                                <div className="user-info">
-                                    <Text strong>{user?.display_name || user?.username}</Text>
-                                    <Text
-                                        style={{
-                                            fontSize: 11,
-                                            color: roleBadge.color,
-                                            textTransform: 'uppercase',
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        {roleBadge.text}
-                                    </Text>
-                                </div>
-                            </div>
-                        </Dropdown>
                     </div>
                 </Header>
                 <Content className="main-content">

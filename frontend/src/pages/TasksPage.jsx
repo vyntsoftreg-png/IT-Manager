@@ -160,7 +160,7 @@ const TasksPage = () => {
     const updateStatusMutation = useMutation({
         mutationFn: ({ id, status }) => taskService.updateStatus(id, status),
         onSuccess: async () => {
-            message.success('Đã cập nhật trạng thái');
+            message.success('Status updated successfully');
             await queryClient.invalidateQueries({ queryKey: ['tasks'] });
             await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         },
@@ -169,7 +169,7 @@ const TasksPage = () => {
     const assignMutation = useMutation({
         mutationFn: ({ id, assignedTo }) => taskService.assignTask(id, assignedTo),
         onSuccess: async () => {
-            message.success('Đã phân công');
+            message.success('Task assigned successfully');
             await queryClient.invalidateQueries({ queryKey: ['tasks'] });
             await queryClient.invalidateQueries({ queryKey: ['taskStats'] });
         },
@@ -207,7 +207,7 @@ const TasksPage = () => {
     const addCommentMutation = useMutation({
         mutationFn: ({ taskId, content }) => taskService.addComment(taskId, content),
         onSuccess: () => {
-            message.success('Đã thêm ghi chú');
+            message.success('Comment added successfully');
             setNewComment('');
             refetchTaskDetail();
         },

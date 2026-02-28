@@ -115,7 +115,7 @@ const changePassword = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Đổi mật khẩu thành công!',
+            message: 'Password changed successfully!',
         });
     } catch (error) {
         console.error('Change password error:', error);
@@ -147,7 +147,7 @@ const updateProfile = async (req, res) => {
         res.json({
             success: true,
             data: req.user.toJSON(),
-            message: 'Cập nhật thông tin thành công!',
+            message: 'Profile updated successfully!',
         });
     } catch (error) {
         console.error('Update profile error:', error);

@@ -73,47 +73,47 @@ const DevicesPage = () => {
     const createMutation = useMutation({
         mutationFn: deviceService.createDevice,
         onSuccess: () => {
-            message.success('Thêm thiết bị thành công!');
+            message.success('Device added successfully!');
             queryClient.invalidateQueries(['devices']);
             handleCloseModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const updateMutation = useMutation({
         mutationFn: ({ id, data }) => deviceService.updateDevice(id, data),
         onSuccess: () => {
-            message.success('Cập nhật thiết bị thành công!');
+            message.success('Device updated successfully!');
             queryClient.invalidateQueries(['devices']);
             handleCloseModal();
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const deleteMutation = useMutation({
         mutationFn: deviceService.deleteDevice,
         onSuccess: () => {
-            message.success('Xóa thiết bị thành công!');
+            message.success('Device deleted successfully!');
             queryClient.invalidateQueries(['devices']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
     const bulkDeleteMutation = useMutation({
         mutationFn: (ids) => deviceService.bulkDelete(ids),
         onSuccess: (data) => {
-            message.success(`Đã xóa ${data.deleted || selectedRowKeys.length} thiết bị!`);
+            message.success(`Deleted ${data.deleted || selectedRowKeys.length} device(s)!`);
             setSelectedRowKeys([]);
             queryClient.invalidateQueries(['devices']);
         },
         onError: (error) => {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            message.error(error.response?.data?.message || 'An error occurred');
         },
     });
 
@@ -204,14 +204,14 @@ const DevicesPage = () => {
                 setIsDrawerOpen(true);
             }
         } catch (error) {
-            message.error('Không thể tải thông tin thiết bị');
+            message.error('Unable to load device information');
         }
     };
 
     // Handle reveal password with admin verification
     const handleRevealPassword = async () => {
         if (!revealPassword) {
-            message.error('Vui lòng nhập mật khẩu xác thực');
+            message.error('Please enter your authentication password');
             return;
         }
 
@@ -225,9 +225,9 @@ const DevicesPage = () => {
             setIsRevealModalOpen(false);
             setRevealPassword('');
             setRevealingAccountId(null);
-            message.success('Xác thực thành công!');
+            message.success('Authentication successful!');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Xác thực thất bại');
+            message.error(error.response?.data?.message || 'Authentication failed');
         } finally {
             setRevealLoading(false);
         }
@@ -237,22 +237,22 @@ const DevicesPage = () => {
     const handleExportCSV = async () => {
         try {
             await deviceService.exportCSV();
-            message.success('Xuất file CSV thành công!');
+            message.success('CSV file exported successfully!');
         } catch (error) {
-            message.error('Không thể xuất file CSV');
+            message.error('Unable to export CSV file');
         }
     };
 
     // Import handlers
     const handleImportCSV = async (file) => {
         setImportLoading(true);
-        setImportProgress({ status: 'Đang đọc file...', percent: 10, total: 0 });
+        setImportProgress({ status: 'Reading file...', percent: 10, total: 0 });
 
         try {
             // Read file content
             const text = await file.text();
 
-            setImportProgress({ status: 'Đang phân tích dữ liệu CSV...', percent: 20, total: 0 });
+            setImportProgress({ status: 'Parsing CSV data...', percent: 20, total: 0 });
 
             // Use PapaParse for robust CSV parsing
             const Papa = (await import('papaparse')).default;
@@ -268,11 +268,11 @@ const DevicesPage = () => {
             }
 
             if (!parsed.data || parsed.data.length === 0) {
-                message.error('Không tìm thấy dữ liệu trong file');
+                message.error('No data found in file');
                 return false;
             }
 
-            setImportProgress({ status: `Đang xử lý ${parsed.data.length} dòng dữ liệu...`, percent: 40, total: parsed.data.length });
+            setImportProgress({ status: `Processing ${parsed.data.length} data rows...`, percent: 40, total: parsed.data.length });
 
             // Map headers to expected field names
             const headerMap = {
@@ -309,16 +309,16 @@ const DevicesPage = () => {
             console.log('Parsed devices:', devices);  // Debug log
 
             if (devices.length === 0) {
-                message.error('Không tìm thấy dữ liệu trong file');
+                message.error('No data found in file');
                 return false;
             }
 
-            setImportProgress({ status: `Đang gửi ${devices.length} thiết bị lên server...`, percent: 60, total: devices.length });
+            setImportProgress({ status: `Uploading ${devices.length} devices to server...`, percent: 60, total: devices.length });
 
             const result = await deviceService.importCSV(devices);
 
-            setImportProgress({ status: 'Hoàn tất!', percent: 100, total: devices.length });
-            message.success(result.message || `Import thành công ${result.data.success} thiết bị!`);
+            setImportProgress({ status: 'Complete!', percent: 100, total: devices.length });
+            message.success(result.message || `Successfully imported ${result.data.success} device(s)!`);
             setIsImportModalOpen(false);
             queryClient.invalidateQueries(['devices']);
         } catch (error) {
@@ -327,19 +327,19 @@ const DevicesPage = () => {
             // Check if this is a validation error with detailed errors array
             if (errorData?.errors && Array.isArray(errorData.errors)) {
                 Modal.error({
-                    title: `Lỗi xác thực dữ liệu (${errorData.errorCount}/${errorData.totalRows} dòng lỗi)`,
+                    title: `Data Validation Errors (${errorData.errorCount}/${errorData.totalRows} rows with errors)`,
                     width: 600,
                     content: (
                         <div style={{ maxHeight: 400, overflow: 'auto' }}>
                             <Alert
-                                message="Vui lòng sửa các lỗi sau trong file CSV và thử lại"
+                                message="Please fix the following errors in the CSV file and try again"
                                 type="warning"
                                 showIcon
                                 style={{ marginBottom: 16 }}
                             />
                             {errorData.errors.map((err, idx) => (
                                 <div key={idx} style={{ marginBottom: 12, padding: '8px 12px', background: '#fff2f0', borderRadius: 4, border: '1px solid #ffccc7' }}>
-                                    <Text strong>Dòng {err.row}: {err.name}</Text>
+                                    <Text strong>Row {err.row}: {err.name}</Text>
                                     <ul style={{ margin: '4px 0 0 16px', paddingLeft: 0 }}>
                                         {err.errors.map((e, i) => (
                                             <li key={i} style={{ color: '#cf1322' }}>{e}</li>
@@ -351,7 +351,7 @@ const DevicesPage = () => {
                     ),
                 });
             } else {
-                message.error('Lỗi import: ' + (errorData?.message || error.message));
+                message.error('Import error: ' + (errorData?.message || error.message));
             }
         } finally {
             setImportLoading(false);
@@ -362,7 +362,7 @@ const DevicesPage = () => {
 
     const downloadTemplate = () => {
         const headers = 'Name,Type,Hostname,IP Address,MAC Address,Manufacturer,Model,Serial Number,Status,Department,Location,Assigned User,Notes';
-        const sample = '"PC-KeToan-01","pc","PC-KETOAN-01","192.168.1.100","AA:BB:CC:DD:EE:FF","Dell","OptiPlex 7080","ABC123","active","Kế toán","Tầng 1","Nguyễn Văn A",""';
+        const sample = '"PC-Accounting-01","pc","PC-ACCOUNTING-01","192.168.1.100","AA:BB:CC:DD:EE:FF","Dell","OptiPlex 7080","ABC123","active","Accounting","Floor 1","John Doe",""';
         const csvContent = '\uFEFF' + headers + '\n' + sample;
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -656,7 +656,7 @@ const DevicesPage = () => {
                                 label={t('devices.deviceName')}
                                 rules={[{ required: true, message: t('validation.deviceNameRequired') }]}
                             >
-                                <Input placeholder="VD: PC-KeToan-01" />
+                                <Input placeholder="e.g. PC-Accounting-01" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -679,12 +679,12 @@ const DevicesPage = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="hostname" label={t('devices.hostname')}>
-                                <Input placeholder="VD: PC-KETOAN-01" />
+                                <Input placeholder="e.g. PC-ACCOUNTING-01" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="mac_address" label={t('devices.macAddress')}>
-                                <Input placeholder="VD: AA:BB:CC:DD:EE:FF" />
+                                <Input placeholder="e.g. AA:BB:CC:DD:EE:FF" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -692,12 +692,12 @@ const DevicesPage = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="manufacturer" label={t('devices.manufacturer')}>
-                                <Input placeholder="VD: Dell, HP, Cisco" />
+                                <Input placeholder="e.g. Dell, HP, Cisco" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="model" label={t('devices.model')}>
-                                <Input placeholder="VD: OptiPlex 7080" />
+                                <Input placeholder="e.g. OptiPlex 7080" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -705,7 +705,7 @@ const DevicesPage = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="serial_number" label={t('devices.serialNumber')}>
-                                <Input placeholder="VD: ABC123XYZ" />
+                                <Input placeholder="e.g. ABC123XYZ" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -724,12 +724,12 @@ const DevicesPage = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="location" label={t('devices.location')}>
-                                <Input placeholder="VD: Tầng 1, Phòng IT" />
+                                <Input placeholder="e.g. Floor 1, IT Room" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="department" label={t('devices.department')}>
-                                <Input placeholder="VD: Phòng Kế toán" />
+                                <Input placeholder="e.g. Accounting Dept" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -737,7 +737,7 @@ const DevicesPage = () => {
                     <Row gutter={16}>
                         <Col span={24}>
                             <Form.Item name="assigned_user" label={t('devices.assignedUser')}>
-                                <Input placeholder="VD: Nguyễn Văn A" />
+                                <Input placeholder="e.g. John Doe" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -974,19 +974,19 @@ const DevicesPage = () => {
                     setRevealingAccountId(null);
                 }}
                 onOk={handleRevealPassword}
-                okText="Xác thực"
-                cancelText="Hủy"
+                okText="Verify"
+                cancelText="Cancel"
                 confirmLoading={revealLoading}
             >
                 <Alert
-                    message="Bảo mật"
-                    description="Vui lòng nhập mật khẩu của bạn để xác thực danh tính."
+                    message="Security"
+                    description="Please enter your password to verify your identity."
                     type="warning"
                     showIcon
                     style={{ marginBottom: 16 }}
                 />
                 <Input.Password
-                    placeholder="Nhập mật khẩu của bạn"
+                    placeholder="Enter your password"
                     value={revealPassword}
                     onChange={(e) => setRevealPassword(e.target.value)}
                     onPressEnter={handleRevealPassword}

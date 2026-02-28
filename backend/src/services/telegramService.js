@@ -70,6 +70,7 @@ const sendTaskReminder = async (chatId, task, reminderType) => {
     const message = `
 ${urgencyEmoji} <b>[MY TASK] Personal Task Reminder</b>
 
+📝 <b>${task.task_number || `#${task.id}`}</b>
 📋 <b>${task.title}</b>
 📅 Deadline: <b>${task.due_date}</b>
 ⏰ <b>${daysText}</b> remaining!
@@ -132,6 +133,7 @@ const sendTaskCreatedNotification = async (chatId, task) => {
     const message = `
 📝 <b>[MY TASK] New personal task!</b>
 
+📝 <b>${task.task_number || `#${task.id}`}</b>
 📌 <b>${task.title}</b>
 ${task.due_date ? `📅 Deadline: <b>${task.due_date}</b>` : '📅 No deadline'}
 🎯 Priority: ${priorityEmoji[task.priority] || '🟡 Medium'}
@@ -152,10 +154,12 @@ const sendTaskCompletedNotification = async (chatId, task) => {
     const message = `
 ✅ <b>[MY TASK] Task completed!</b>
 
+📝 <b>${task.task_number || `#${task.id}`}</b>
 📌 <b>${task.title}</b>
 ${task.due_date ? `📅 Deadline: ${task.due_date}` : ''}
-🎉 Congratulations on completing your task!
+🕐 Completed at: <b>${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</b>
 
+🎉 Congratulations on completing your task!
 Keep up the great work! 💪
     `.trim();
 
@@ -229,7 +233,7 @@ const sendSupportTicketUpdateNotification = async (chatId, ticket, updateType, c
             updateText = `👷 Assigned to: <b>${changes.assignedTo}</b>`;
             break;
         case 'resolved':
-            updateText = `✅ Ticket has been resolved!`;
+            updateText = `✅ Ticket has been resolved!\n🕐 Resolved at: <b>${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</b>`;
             break;
         default:
             updateText = `📝 Ticket has been updated`;
@@ -239,7 +243,8 @@ const sendSupportTicketUpdateNotification = async (chatId, ticket, updateType, c
 🎫 <b>[SUPPORT] Ticket update</b>
 
 📝 <b>#${ticket.task_number || 'N/A'}</b>: ${ticket.title}
-👤 Requester: ${ticket.requester_name}
+👤 Requester: <b>${ticket.requester_name || 'N/A'}</b>
+${ticket.requester_department ? `🏢 Department: ${ticket.requester_department}` : ''}
 
 ${updateText}
     `.trim();

@@ -519,25 +519,25 @@ const importDevicesCSV = async (req, res) => {
 
             // Check required fields
             if (!deviceData.name || !deviceData.name.trim()) {
-                rowErrors.push('Thiếu tên thiết bị (name)');
+                rowErrors.push('Missing device name (name)');
             }
             if (!deviceData.type || !deviceData.type.trim()) {
-                rowErrors.push('Thiếu loại thiết bị (type)');
+                rowErrors.push('Missing device type (type)');
             } else if (!validTypes.includes(deviceData.type.toLowerCase())) {
-                rowErrors.push(`Loại thiết bị không hợp lệ: "${deviceData.type}". Các loại hợp lệ: ${validTypes.join(', ')}`);
+                rowErrors.push(`Invalid device type: "${deviceData.type}". Valid types: ${validTypes.join(', ')}`);
             }
 
             // Check IP address (required)
             const ipString = deviceData.ip_addresses || deviceData.ip;
             if (!ipString || !ipString.trim()) {
-                rowErrors.push('Thiếu địa chỉ IP (ip)');
+                rowErrors.push('Missing IP address (ip)');
             } else {
                 // Validate IP format
                 const ipList = ipString.split(/[;,]/).map(ip => ip.trim()).filter(ip => ip);
                 const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
                 for (const ip of ipList) {
                     if (!ipRegex.test(ip)) {
-                        rowErrors.push(`IP address không đúng định dạng: "${ip}"`);
+                        rowErrors.push(`Invalid IP address format: "${ip}"`);
                     }
                 }
             }
@@ -546,14 +546,14 @@ const importDevicesCSV = async (req, res) => {
             if (deviceData.mac_address) {
                 const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
                 if (!macRegex.test(deviceData.mac_address)) {
-                    rowErrors.push(`MAC address không đúng định dạng: "${deviceData.mac_address}"`);
+                    rowErrors.push(`Invalid MAC address format: "${deviceData.mac_address}"`);
                 }
             }
 
             if (rowErrors.length > 0) {
                 validationErrors.push({
                     row: rowNum,
-                    name: deviceData.name || '(không có tên)',
+                    name: deviceData.name || '(unnamed)',
                     errors: rowErrors,
                 });
             } else {
@@ -565,7 +565,7 @@ const importDevicesCSV = async (req, res) => {
         if (validationErrors.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Có ${validationErrors.length} dòng lỗi. Vui lòng sửa dữ liệu và thử lại.`,
+                message: `${validationErrors.length} row(s) have errors. Please fix the data and try again.`,
                 errors: validationErrors,
                 totalRows: devices.length,
                 errorCount: validationErrors.length,

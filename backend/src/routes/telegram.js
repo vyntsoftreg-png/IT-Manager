@@ -27,7 +27,7 @@ router.get('/bot-token', async (req, res) => {
         });
     } catch (error) {
         console.error('Get bot token error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy Bot Token' });
+        res.status(500).json({ success: false, message: 'Error fetching Bot Token' });
     }
 });
 
@@ -49,7 +49,7 @@ router.put('/bot-token', async (req, res) => {
         if (!testResult.success) {
             return res.status(400).json({
                 success: false,
-                message: `Bot Token không hợp lệ: ${testResult.error}`
+                message: `Invalid Bot Token: ${testResult.error}`
             });
         }
 
@@ -70,12 +70,12 @@ router.put('/bot-token', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Đã lưu Bot Token thành công',
+            message: 'Bot Token saved successfully',
             data: { botInfo: testResult.botInfo }
         });
     } catch (error) {
         console.error('Update bot token error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lưu Bot Token' });
+        res.status(500).json({ success: false, message: 'Error saving Bot Token' });
     }
 });
 
@@ -90,14 +90,14 @@ router.post('/test-bot', async (req, res) => {
         const tokenToTest = bot_token || (await telegramService.getBotToken());
 
         if (!tokenToTest) {
-            return res.status(400).json({ success: false, message: 'Bot Token chưa được cấu hình' });
+            return res.status(400).json({ success: false, message: 'Bot Token is not configured' });
         }
 
         const result = await telegramService.testBotConnection(tokenToTest);
         res.json(result);
     } catch (error) {
         console.error('Test bot error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi test Bot' });
+        res.status(500).json({ success: false, message: 'Error testing Bot' });
     }
 });
 
@@ -114,7 +114,7 @@ router.get('/my-chat-id', async (req, res) => {
         });
     } catch (error) {
         console.error('Get chat ID error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lấy Chat ID' });
+        res.status(500).json({ success: false, message: 'Error fetching Chat ID' });
     }
 });
 
@@ -136,11 +136,11 @@ router.put('/my-chat-id', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Đã lưu Chat ID thành công'
+            message: 'Chat ID saved successfully'
         });
     } catch (error) {
         console.error('Update chat ID error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi lưu Chat ID' });
+        res.status(500).json({ success: false, message: 'Error saving Chat ID' });
     }
 });
 
@@ -152,23 +152,23 @@ router.post('/test-message', async (req, res) => {
         if (!user?.telegram_chat_id) {
             return res.status(400).json({
                 success: false,
-                message: 'Vui lòng nhập Chat ID trước khi test'
+                message: 'Please enter a Chat ID before testing'
             });
         }
 
         const result = await telegramService.sendTestMessage(user.telegram_chat_id);
 
         if (result.success) {
-            res.json({ success: true, message: 'Đã gửi tin nhắn test!' });
+            res.json({ success: true, message: 'Test message sent successfully!' });
         } else {
             res.status(400).json({
                 success: false,
-                message: `Lỗi: ${result.error}`
+                message: `Error: ${result.error}`
             });
         }
     } catch (error) {
         console.error('Send test message error:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi gửi tin nhắn test' });
+        res.status(500).json({ success: false, message: 'Error sending test message' });
     }
 });
 
