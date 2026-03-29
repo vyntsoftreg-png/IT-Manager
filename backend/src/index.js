@@ -106,6 +106,22 @@ const startServer = async () => {
                 console.log('✅ Added task_number column to personal_tasks');
             }
         } catch (e) { /* table may not exist yet, sync will create it */ }
+        // Migrate: add rating columns to tasks if missing
+        try {
+            const [taskCols] = await sequelize.query("PRAGMA table_info('tasks')");
+            if (!taskCols.find(c => c.name === 'rating')) {
+                await sequelize.query("ALTER TABLE tasks ADD COLUMN rating INTEGER");
+                console.log('✅ Added rating column to tasks');
+            }
+            if (!taskCols.find(c => c.name === 'rating_comment')) {
+                await sequelize.query("ALTER TABLE tasks ADD COLUMN rating_comment TEXT");
+                console.log('✅ Added rating_comment column to tasks');
+            }
+            if (!taskCols.find(c => c.name === 'rated_at')) {
+                await sequelize.query("ALTER TABLE tasks ADD COLUMN rated_at DATETIME");
+                console.log('✅ Added rated_at column to tasks');
+            }
+        } catch (e) { /* table may not exist yet, sync will create it */ }
 
         await sequelize.sync();
         console.log('✅ Database synchronized');
@@ -183,11 +199,35 @@ const startServer = async () => {
         const { startReminderWorker } = require('./workers/reminderWorker');
         startReminderWorker();
         console.log('📬 Telegram reminder worker started');
+        
+        // Start weekly report worker
+        const { initScheduledReports } = require('./workers/reportWorker');
+        initScheduledReports();
+        console.log('📊 Weekly report worker started');
 
-        server.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
+        // Start Daily SLA worker
+        const { initSlaWorker } = require('./workers/slaWorker');
+        initSlaWorker();
+        console.log('⏱️ SLA worker started');
+
+        const serverInstance = server.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Server running on http://localhost:${PORT} (Bound to 0.0.0.0)`);
             console.log(`📚 API available at http://localhost:${PORT}/api`);
         });
+
+        // Graceful shutdown for fast nodemon restarts
+        const gracefulShutdown = () => {
+            serverInstance.close(() => {
+                console.log('❌ Existing server closed.');
+                process.exit(0);
+            });
+            // Force exit if hanging
+            setTimeout(() => { process.exit(1); }, 2000);
+        };
+        process.on('SIGTERM', gracefulShutdown);
+        process.on('SIGINT', gracefulShutdown);
+        process.on('SIGUSR2', gracefulShutdown); // Nodemon restart signal
+
     } catch (error) {
         console.error('❌ Failed to start server:', error);
         process.exit(1);

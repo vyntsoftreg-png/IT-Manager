@@ -37,6 +37,18 @@ export const telegramService = {
     sendTestMessage: async () => {
         const response = await api.post(`${BASE_URL}/test-message`);
         return response.data;
+    },
+
+    // Get report config (admin only)
+    getReportConfig: async () => {
+        const response = await api.get(`${BASE_URL}/report-config`);
+        return response.data;
+    },
+
+    // Update report config (admin only)
+    updateReportConfig: async (config) => {
+        const response = await api.put(`${BASE_URL}/report-config`, config);
+        return response.data;
     }
 };
 

@@ -9,6 +9,7 @@ import {
     EditOutlined, DeleteOutlined, EyeOutlined, ExportOutlined,
     CheckCircleOutlined, ClockCircleOutlined, WarningOutlined,
     DownloadOutlined, UploadOutlined, LockOutlined, EyeInvisibleOutlined,
+    QrcodeOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,7 @@ import { accountService } from '../services/accountService';
 import { pingService } from '../services/pingService';
 import { useAuth } from '../contexts/AuthContext';
 import PingStatusDot from '../components/PingStatusDot';
+import QrCodeModal from '../components/QrCodeModal';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -45,6 +47,8 @@ const DevicesPage = () => {
     const [importProgress, setImportProgress] = useState({ status: '', percent: 0, total: 0 });
     const [ipPingStatus, setIpPingStatus] = useState({});
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+    const [qrDevice, setQrDevice] = useState(null);
 
     // Password reveal state
     const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
@@ -155,6 +159,11 @@ const DevicesPage = () => {
             page: paginationInfo.current,
             limit: paginationInfo.pageSize,
         }));
+    };
+
+    const handleOpenQrModal = (device) => {
+        setQrDevice(device);
+        setIsQrModalOpen(true);
     };
 
     const handleOpenModal = (device = null) => {
@@ -474,6 +483,14 @@ const DevicesPage = () => {
             width: 130,
             render: (_, record) => (
                 <Space size="small">
+                    <Tooltip title="QR Code">
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<QrcodeOutlined />}
+                            onClick={() => handleOpenQrModal(record)}
+                        />
+                    </Tooltip>
                     <Tooltip title={t('common.view')}>
                         <Button
                             type="text"
@@ -992,6 +1009,13 @@ const DevicesPage = () => {
                     onPressEnter={handleRevealPassword}
                 />
             </Modal>
+
+            {/* QR Code Modal */}
+            <QrCodeModal
+                isOpen={isQrModalOpen}
+                onClose={() => setIsQrModalOpen(false)}
+                device={qrDevice}
+            />
         </div>
     );
 };

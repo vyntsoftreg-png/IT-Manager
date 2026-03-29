@@ -14,16 +14,18 @@ import MainLayout from './layouts/MainLayout';
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const DevicesPage = lazy(() => import('./pages/DevicesPage'));
+const DeviceDetailsPage = lazy(() => import('./pages/DeviceDetailsPage'));
 const IpMapPage = lazy(() => import('./pages/IpMapPage'));
 const AccountsPage = lazy(() => import('./pages/AccountsPage'));
 const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
-const SupportRequestPage = lazy(() => import('./pages/SupportRequestPage'));
+const SelfServicePortal = lazy(() => import('./pages/SelfServicePortal'));
 const BackupPage = lazy(() => import('./pages/BackupPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 const PersonalTasksPage = lazy(() => import('./pages/PersonalTasksPage'));
+const SlaPage = lazy(() => import('./pages/SlaPage'));
 
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -110,7 +112,8 @@ const ThemedApp = () => {
               }>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/support" element={<SupportRequestPage />} />
+                  <Route path="/support" element={<SelfServicePortal />} />
+                  <Route path="/support/*" element={<SelfServicePortal />} />
                   <Route path="/documents" element={<DocumentsPageWrapper />} />
                   <Route
                     path="/"
@@ -122,6 +125,7 @@ const ThemedApp = () => {
                   >
                     <Route index element={<DashboardPage />} />
                     <Route path="devices" element={<DevicesPage />} />
+                    <Route path="devices/:id" element={<DeviceDetailsPage />} />
                     <Route path="ip-map" element={<IpMapPage />} />
                     <Route path="accounts" element={<AccountsPage />} />
                     <Route path="tasks" element={<TasksPage />} />
@@ -130,6 +134,7 @@ const ThemedApp = () => {
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="backup" element={<BackupPage />} />
+                    <Route path="sla" element={<SlaPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

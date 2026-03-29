@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { Device, IpAddress, AdminAccount, NetworkSegment, SystemSetting } = require('../models');
 const { createAuditLog } = require('../middleware/audit');
+const QRCode = require('qrcode');
 
 // Get all devices with filtering and pagination
 const getDevices = async (req, res) => {
@@ -731,9 +732,53 @@ const bulkDeleteDevices = async (req, res) => {
     }
 };
 
+// Generate QR code for a device
+const getDeviceQRCode = async (req, res) => {
+    try {
+        const device = await Device.findByPk(req.params.id);
+
+        if (!device) {
+            return res.status(404).json({
+                success: false,
+                message: 'Device not found',
+            });
+        }
+
+        // Provide URL to the device details page
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const deviceUrl = `${frontendUrl}/devices/${device.id}`;
+        
+        // Generate QR Code as Data URI
+        const qrCodeDataUri = await QRCode.toDataURL(deviceUrl, {
+            errorCorrectionLevel: 'H',
+            margin: 1,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            }
+        });
+
+        res.json({
+            success: true,
+            data: {
+                id: device.id,
+                name: device.name,
+                qrCode: qrCodeDataUri
+            }
+        });
+    } catch (error) {
+        console.error('Get device QR code error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to generate QR code',
+        });
+    }
+};
+
 module.exports = {
     getDevices,
     getDevice,
+    getDeviceQRCode,
     createDevice,
     updateDevice,
     deleteDevice,

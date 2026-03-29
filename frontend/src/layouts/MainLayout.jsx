@@ -57,6 +57,11 @@ const MainLayout = ({ children }) => {
                     icon: <DashboardOutlined />,
                     label: t('menu.dashboard'),
                 },
+                {
+                    key: '/sla',
+                    icon: <CheckSquareOutlined />,
+                    label: 'SLA Dashboard',
+                },
             ],
         },
         {

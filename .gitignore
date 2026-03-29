@@ -51,3 +51,9 @@ coverage/
 *.pem
 *.key
 *.crt
+
+# Data, Internal Notes & Custom Tests
+backend/data/
+backend/test_*.js
+backend/check_*.js
+frontend/build_output.txt

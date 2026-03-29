@@ -76,6 +76,19 @@ const Task = sequelize.define('Task', {
             key: 'id',
         },
     },
+    rating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: { min: 1, max: 5 },
+    },
+    rating_comment: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    rated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     tableName: 'tasks',
     timestamps: true,

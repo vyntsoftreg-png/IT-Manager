@@ -142,10 +142,71 @@ const search = async (query) => {
     return results;
 };
 
+const PUBLIC_WIKI_DIR = path.join(__dirname, '../../data/wiki/public');
+
+// Ensure public directory exists
+const ensurePublicDir = async () => {
+    try {
+        await fs.access(PUBLIC_WIKI_DIR);
+    } catch {
+        await fs.mkdir(PUBLIC_WIKI_DIR, { recursive: true });
+    }
+};
+ensurePublicDir();
+
+// Get public KB tree (only articles in data/wiki/public/)
+const getPublicTree = async (dir = PUBLIC_WIKI_DIR) => {
+    try {
+        if (!require('fs').existsSync(dir)) {
+            await fs.mkdir(dir, { recursive: true });
+        }
+        const items = await fs.readdir(dir, { withFileTypes: true });
+        const tree = await Promise.all(items.map(async (item) => {
+            const fullPath = path.join(dir, item.name);
+            const relativePath = path.relative(PUBLIC_WIKI_DIR, fullPath).replace(/\\/g, '/');
+            if (item.isDirectory()) {
+                return {
+                    title: item.name,
+                    key: relativePath,
+                    children: await getPublicTree(fullPath),
+                    isLeaf: false,
+                };
+            } else if (item.name.endsWith('.md')) {
+                return {
+                    title: item.name.replace('.md', ''),
+                    key: relativePath,
+                    isLeaf: true,
+                };
+            }
+            return null;
+        }));
+        return tree.filter(Boolean);
+    } catch {
+        return [];
+    }
+};
+
+// Get public page content
+const getPublicPage = async (pagePath) => {
+    const safePath = path.normalize(pagePath).replace(/^(\.\.[\\/])+/, '');
+    const fullPath = path.join(PUBLIC_WIKI_DIR, safePath);
+    if (!fullPath.startsWith(PUBLIC_WIKI_DIR)) {
+        throw new Error('Invalid path');
+    }
+    try {
+        return await fs.readFile(fullPath, 'utf8');
+    } catch (error) {
+        if (error.code === 'ENOENT') return null;
+        throw error;
+    }
+};
+
 module.exports = {
     getTree,
     getPage,
     savePage,
     deletePage,
-    search
+    search,
+    getPublicTree,
+    getPublicPage
 };

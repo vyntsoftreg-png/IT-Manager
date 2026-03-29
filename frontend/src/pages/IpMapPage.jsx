@@ -3,6 +3,7 @@ import {
     Card, Table, Button, Input, Select, Space, Tag, Modal, Form,
     Row, Col, Typography, message, Popconfirm, Tooltip, Progress,
     List, Badge, Drawer, Descriptions, Empty, Divider, Spin, Alert,
+    Upload,
 } from 'antd';
 import {
     PlusOutlined, SearchOutlined, ReloadOutlined, EditOutlined,
@@ -10,6 +11,7 @@ import {
     DisconnectOutlined, CheckCircleOutlined, CloseCircleOutlined,
     ExclamationCircleOutlined, LockOutlined, PlayCircleOutlined,
     PauseCircleOutlined, RadarChartOutlined,
+    DownloadOutlined, UploadOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +45,10 @@ const IpMapPage = () => {
         search: '',
         pingStatus: undefined,
     });
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importResult, setImportResult] = useState(null);
+    const [exportLoading, setExportLoading] = useState(false);
 
     // Ping state
     const [isPinging, setIsPinging] = useState(false);
@@ -375,6 +381,37 @@ const IpMapPage = () => {
 
     const handleIpFilterChange = (key, value) => {
         setIpFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+    };
+
+    const handleExport = async () => {
+        if (!selectedSegment) return;
+        setExportLoading(true);
+        try {
+            await segmentService.exportSegment(selectedSegment.id);
+            message.success('Exported successfully!');
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Export failed');
+        } finally {
+            setExportLoading(false);
+        }
+    };
+
+    const handleImportFile = async (file) => {
+        if (!selectedSegment) return;
+        setImportLoading(true);
+        setImportResult(null);
+        try {
+            const result = await segmentService.importSegment(selectedSegment.id, file);
+            setImportResult(result.data);
+            message.success(result.message || 'Import completed!');
+            queryClient.invalidateQueries(['ips']);
+            queryClient.invalidateQueries(['segments']);
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Import failed');
+        } finally {
+            setImportLoading(false);
+        }
+        return false;
     };
 
     const handleTableChange = (paginationInfo) => {
@@ -748,6 +785,29 @@ const IpMapPage = () => {
                                         <Text type="secondary">({selectedSegment.cidr})</Text>
                                     </Space>
                                 }
+                                extra={
+                                    canEdit && (
+                                        <Space>
+                                            <Tooltip title="Export Excel">
+                                                <Button
+                                                    icon={<DownloadOutlined />}
+                                                    loading={exportLoading}
+                                                    onClick={handleExport}
+                                                >
+                                                    Export
+                                                </Button>
+                                            </Tooltip>
+                                            <Tooltip title="Import Excel">
+                                                <Button
+                                                    icon={<UploadOutlined />}
+                                                    onClick={() => { setIsImportModalOpen(true); setImportResult(null); }}
+                                                >
+                                                    Import
+                                                </Button>
+                                            </Tooltip>
+                                        </Space>
+                                    )
+                                }
                             >
                                 <Table
                                     columns={ipColumns}
@@ -930,6 +990,80 @@ const IpMapPage = () => {
                         </Space>
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            {/* Import Modal */}
+            <Modal
+                title={`Import Excel - ${selectedSegment?.name || ''}`}
+                open={isImportModalOpen}
+                onCancel={() => { setIsImportModalOpen(false); setImportResult(null); }}
+                footer={
+                    <Button onClick={() => { setIsImportModalOpen(false); setImportResult(null); }}>
+                        Close
+                    </Button>
+                }
+                width={520}
+                destroyOnClose
+            >
+                <div style={{ marginBottom: 16 }}>
+                    <Alert
+                        message="Upload an Excel file (.xlsx) to update IP information in this segment."
+                        description="Tip: Export the current data first, edit it, then import back. Only existing IPs will be updated — no new IPs are created."
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                    />
+                    <Upload.Dragger
+                        accept=".xlsx,.xls"
+                        maxCount={1}
+                        beforeUpload={handleImportFile}
+                        showUploadList={false}
+                        disabled={importLoading}
+                    >
+                        <p className="ant-upload-drag-icon">
+                            {importLoading ? <Spin /> : <UploadOutlined style={{ fontSize: 32, color: '#1890ff' }} />}
+                        </p>
+                        <p className="ant-upload-text">
+                            {importLoading ? 'Importing...' : 'Click or drag Excel file here'}
+                        </p>
+                        <p className="ant-upload-hint">.xlsx or .xls files only</p>
+                    </Upload.Dragger>
+                </div>
+
+                {importResult && (
+                    <div style={{ marginTop: 16 }}>
+                        <Divider />
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                            <Space size="large">
+                                <Tag color="green" style={{ fontSize: 14, padding: '4px 12px' }}>
+                                    ✅ Updated: {importResult.updated}
+                                </Tag>
+                                <Tag color="default" style={{ fontSize: 14, padding: '4px 12px' }}>
+                                    ⏭️ Skipped: {importResult.skipped}
+                                </Tag>
+                                {importResult.errors?.length > 0 && (
+                                    <Tag color="red" style={{ fontSize: 14, padding: '4px 12px' }}>
+                                        ❌ Errors: {importResult.errors.length}
+                                    </Tag>
+                                )}
+                            </Space>
+                            {importResult.errors?.length > 0 && (
+                                <Alert
+                                    message="Error Details"
+                                    description={
+                                        <ul style={{ margin: 0, paddingLeft: 20, maxHeight: 150, overflow: 'auto' }}>
+                                            {importResult.errors.map((err, i) => (
+                                                <li key={i}>{err}</li>
+                                            ))}
+                                        </ul>
+                                    }
+                                    type="warning"
+                                    showIcon
+                                />
+                            )}
+                        </Space>
+                    </div>
+                )}
             </Modal>
         </div>
     );

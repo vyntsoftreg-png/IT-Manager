@@ -22,6 +22,8 @@ import {
     Avatar,
     Empty,
     Modal,
+    Rate,
+    DatePicker,
 } from 'antd';
 import {
     PlusOutlined,
@@ -37,11 +39,13 @@ import {
     ExclamationCircleOutlined,
     CommentOutlined,
     SendOutlined,
+    StarOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../contexts/SocketContext';
 import taskService from '../services/taskService';
+import ExcelJS from 'exceljs';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
@@ -229,27 +233,115 @@ const TasksPage = () => {
         try {
             const response = await taskService.exportTasks(filters);
             if (response.success) {
-                // Convert to CSV and download
                 const data = response.data;
                 if (data.length === 0) {
                     message.warning(t('common.noData'));
                     return;
                 }
-                const headers = Object.keys(data[0]);
-                const csv = [
-                    headers.join(','),
-                    ...data.map(row => headers.map(h => `"${row[h] || ''}"`).join(',')),
-                ].join('\n');
 
-                const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+                // 🌟 Create Excel Workbook
+                const workbook = new ExcelJS.Workbook();
+                workbook.creator = 'IT Manager System';
+                workbook.created = new Date();
+
+                const sheet = workbook.addWorksheet('IT Support Tasks');
+
+                // Define headers
+                const headers = Object.keys(data[0]);
+                sheet.columns = headers.map(h => ({
+                    header: h,
+                    key: h
+                }));
+
+                // Set nice column widths
+                const colWidths = {
+                    'Request ID': 20,
+                    'Title': 35,
+                    'Description': 50,
+                    'Category': 15,
+                    'Priority': 12,
+                    'Status': 15,
+                    'Requester': 25,
+                    'Email': 25,
+                    'Department': 20,
+                    'Assignee': 25,
+                    'Notes': 60,
+                    'Created At': 22,
+                    'Resolved At': 22,
+                };
+                
+                sheet.columns.forEach(col => {
+                    if (colWidths[col.header]) {
+                        col.width = colWidths[col.header];
+                    } else {
+                        col.width = 15;
+                    }
+                });
+
+                // Style the header row
+                const headerRow = sheet.getRow(1);
+                headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                headerRow.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF1890FF' } // Ant Design Primary Blue
+                };
+                headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+                headerRow.height = 25;
+
+                // Add data rows with formatting
+                data.forEach((row, index) => {
+                    const sheetRow = sheet.addRow(row);
+                    
+                    // Subtle zebra striping
+                    if (index % 2 === 0) {
+                        sheetRow.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFF9F9F9' }
+                        };
+                    }
+                    
+                    sheetRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                        cell.alignment = { vertical: 'middle', wrapText: true };
+                        const header = headers[colNumber - 1];
+                        
+                        // Format dates nicely
+                        if (header === 'Created At' || header === 'Resolved At') {
+                            if (cell.value) {
+                                cell.value = dayjs(cell.value).format('DD/MM/YYYY HH:mm:ss');
+                                cell.alignment.horizontal = 'center';
+                            }
+                        } else if (header === 'Status' || header === 'Priority' || header === 'Category' || header === 'Request ID') {
+                            cell.alignment.horizontal = 'center';
+                        }
+                        
+                        // Add border to all cells
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+                            left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+                            bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+                            right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
+                        };
+                    });
+                });
+
+                // Download file
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `tasks_report_${dayjs().format('YYYY-MM-DD')}.csv`;
+                link.download = `IT_Tickets_Report_${dayjs().format('YYYYMMDD_HHmm')}.xlsx`;
+                document.body.appendChild(link);
                 link.click();
-                message.success(t('common.export') + ' OK');
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                message.success(t('common.export') + ' Excel OK');
             }
         } catch (error) {
+            console.error('Export Excel error:', error);
             message.error(t('common.operationFailed'));
         }
     };
@@ -449,8 +541,8 @@ const TasksPage = () => {
 
             {/* Filters */}
             <Card size="small" style={{ marginBottom: 16 }}>
-                <Row gutter={16}>
-                    <Col xs={24} sm={8} md={6}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={6}>
                         <Input
                             placeholder={t('common.searchPlaceholder')}
                             prefix={<SearchOutlined />}
@@ -458,7 +550,7 @@ const TasksPage = () => {
                             allowClear
                         />
                     </Col>
-                    <Col xs={12} sm={8} md={4}>
+                    <Col xs={12} sm={6} md={3}>
                         <Select
                             placeholder={t('common.status')}
                             style={{ width: '100%' }}
@@ -470,7 +562,7 @@ const TasksPage = () => {
                             ))}
                         </Select>
                     </Col>
-                    <Col xs={12} sm={8} md={4}>
+                    <Col xs={12} sm={6} md={3}>
                         <Select
                             placeholder={t('tasks.priority')}
                             style={{ width: '100%' }}
@@ -482,7 +574,7 @@ const TasksPage = () => {
                             ))}
                         </Select>
                     </Col>
-                    <Col xs={12} sm={8} md={4}>
+                    <Col xs={12} sm={6} md={3}>
                         <Select
                             placeholder={t('tasks.category')}
                             style={{ width: '100%' }}
@@ -493,6 +585,39 @@ const TasksPage = () => {
                                 <Select.Option key={key} value={key}>{label}</Select.Option>
                             ))}
                         </Select>
+                    </Col>
+                    <Col xs={12} sm={6} md={3}>
+                        <Select
+                            placeholder={t('tasks.assignee')}
+                            style={{ width: '100%' }}
+                            onChange={(val) => setFilters({ ...filters, assigned_to: val })}
+                            allowClear
+                        >
+                            {usersData?.data?.map(user => (
+                                <Select.Option key={user.id} value={user.id}>
+                                    {user.display_name || user.username}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <DatePicker.RangePicker
+                            style={{ width: '100%' }}
+                            format="DD/MM/YYYY"
+                            placeholder={[t('common.fromDate') || 'Từ ngày', t('common.toDate') || 'Đến ngày']}
+                            onChange={(dates) => {
+                                if (dates) {
+                                    setFilters({
+                                        ...filters,
+                                        from_date: dates[0].format('YYYY-MM-DD'),
+                                        to_date: dates[1].format('YYYY-MM-DD')
+                                    });
+                                } else {
+                                    const { from_date, to_date, ...rest } = filters;
+                                    setFilters(rest);
+                                }
+                            }}
+                        />
                     </Col>
                 </Row>
             </Card>
@@ -553,6 +678,38 @@ const TasksPage = () => {
                                 <div>{taskDetail.data.requester_phone}</div>
                             </div>
 
+                            {/* User Feedback / Rating */}
+                            {taskDetail.data.rating && (
+                                <>
+                                    <Divider />
+                                    <div>
+                                        <Title level={5}><StarOutlined /> User Feedback</Title>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                                            <Rate disabled value={taskDetail.data.rating} />
+                                            <Tag color={taskDetail.data.rating >= 4 ? 'success' : taskDetail.data.rating >= 3 ? 'warning' : 'error'}>
+                                                {taskDetail.data.rating}/5
+                                            </Tag>
+                                        </div>
+                                        {taskDetail.data.rating_comment && (
+                                            <div style={{
+                                                padding: '8px 12px',
+                                                background: 'rgba(0,0,0,0.04)',
+                                                borderRadius: 8,
+                                                borderLeft: '3px solid #faad14',
+                                                marginBottom: 8,
+                                            }}>
+                                                <Text italic>&ldquo;{taskDetail.data.rating_comment}&rdquo;</Text>
+                                            </div>
+                                        )}
+                                        {taskDetail.data.rated_at && (
+                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                Rated {dayjs(taskDetail.data.rated_at).fromNow()}
+                                            </Text>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
                             <Divider />
 
                             {/* Comments */}
@@ -563,7 +720,9 @@ const TasksPage = () => {
                                         {taskDetail.data.comments.map(comment => (
                                             <Timeline.Item key={comment.id}>
                                                 <div>
-                                                    <Text strong>{comment.user?.display_name || 'IT'}</Text>
+                                                    <Text strong>
+                                                        {comment.user ? (comment.user.display_name || comment.user.username) : 'System'}
+                                                    </Text>
                                                     <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
                                                         {dayjs(comment.createdAt).fromNow()}
                                                     </Text>

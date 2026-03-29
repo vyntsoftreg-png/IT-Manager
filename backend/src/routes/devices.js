@@ -14,6 +14,7 @@ router.get('/stats', deviceController.getDeviceStats);
 // CRUD operations
 router.get('/', deviceController.getDevices);
 router.get('/:id', deviceController.getDevice);
+router.get('/:id/qr', deviceController.getDeviceQRCode);
 
 // Create/Update/Delete require IT Ops or Admin role
 router.post('/', requireRole('admin', 'it_ops'), deviceController.createDevice);

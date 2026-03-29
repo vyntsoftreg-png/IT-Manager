@@ -15,6 +15,7 @@ const supportRoutes = require('./support');
 const backupRoutes = require('./backup');
 const personalTaskRoutes = require('./personalTasks');
 const personalTaskCategoryRoutes = require('./personalTaskCategories');
+const slaRoutes = require('./sla');
 
 router.use('/auth', authRoutes);
 router.use('/devices', deviceRoutes);
@@ -33,6 +34,7 @@ router.use('/documents', require('./documents'));
 router.use('/personal-tasks', personalTaskRoutes);
 router.use('/personal-task-categories', personalTaskCategoryRoutes);
 router.use('/telegram', require('./telegram'));
+router.use('/sla', slaRoutes);
 
 // Health check
 router.get('/health', (req, res) => {

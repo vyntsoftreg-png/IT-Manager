@@ -172,4 +172,61 @@ router.post('/test-message', async (req, res) => {
     }
 });
 
+// GET /api/telegram/report-config - Get weekly report config (admin only)
+router.get('/report-config', async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+
+        const chatIdSetting = await SystemSetting.findOne({ where: { category: 'telegram', key: 'report_chat_id' } });
+        const scheduleSetting = await SystemSetting.findOne({ where: { category: 'telegram', key: 'report_schedule' } });
+
+        res.json({
+            success: true,
+            data: {
+                report_chat_id: chatIdSetting?.value || '',
+                report_schedule: scheduleSetting?.value || '0 8 * * 0'
+            }
+        });
+    } catch (error) {
+        console.error('Get report config error:', error);
+        res.status(500).json({ success: false, message: 'Error fetching Report Config' });
+    }
+});
+
+// PUT /api/telegram/report-config - Update weekly report config (admin only)
+router.put('/report-config', async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+
+        const { report_chat_id, report_schedule } = req.body;
+
+        await SystemSetting.upsert({
+            category: 'telegram',
+            key: 'report_chat_id',
+            value: report_chat_id || '',
+            label: 'Report Chat ID'
+        });
+
+        await SystemSetting.upsert({
+            category: 'telegram',
+            key: 'report_schedule',
+            value: report_schedule || '0 8 * * 0',
+            label: 'Report Schedule Cron'
+        });
+
+        // Re-initialize the worker with new settings
+        const { initScheduledReports } = require('../workers/reportWorker');
+        await initScheduledReports();
+
+        res.json({ success: true, message: 'Report Config saved successfully' });
+    } catch (error) {
+        console.error('Update report config error:', error);
+        res.status(500).json({ success: false, message: 'Error saving Report Config' });
+    }
+});
+
 module.exports = router;

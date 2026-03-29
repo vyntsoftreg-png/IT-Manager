@@ -8,8 +8,8 @@ services:
       - it-manager-data:/app/data
     environment:
       - NODE_ENV=production
-      - JWT_SECRET=your-super-secret-jwt-key-change-this
-      - ADMIN_PASSWORD=admin123
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
     restart: unless-stopped
 
   # Nginx reverse proxy (optional - for production with SSL)

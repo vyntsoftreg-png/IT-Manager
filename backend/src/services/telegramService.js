@@ -239,12 +239,25 @@ const sendSupportTicketUpdateNotification = async (chatId, ticket, updateType, c
             updateText = `📝 Ticket has been updated`;
     }
 
+    let assigneeName = 'Chưa phân công';
+    if (ticket.assigned_to) {
+        try {
+            const { User } = require('../models');
+            const user = await User.findByPk(ticket.assigned_to);
+            if (user) assigneeName = user.display_name || user.username;
+        } catch (e) {
+            console.error('Error fetching assignee for Telegram:', e);
+        }
+    } else if (updateType === 'assigned' && changes.assignedTo) {
+        assigneeName = changes.assignedTo;
+    }
+
     const message = `
 🎫 <b>[SUPPORT] Ticket update</b>
 
 📝 <b>#${ticket.task_number || 'N/A'}</b>: ${ticket.title}
 👤 Requester: <b>${ticket.requester_name || 'N/A'}</b>
-${ticket.requester_department ? `🏢 Department: ${ticket.requester_department}` : ''}
+${ticket.requester_department ? `🏢 Department: ${ticket.requester_department}\n` : ''}👷 Assignee: <b>${assigneeName}</b>
 
 ${updateText}
     `.trim();
@@ -277,6 +290,68 @@ const notifyITStaff = async (users, ticket, notificationType = 'created', change
     return results;
 };
 
+// ==================== WEEKLY REPORT ====================
+
+/**
+ * Send weekly IT report
+ * @param {string} chatId - Target Telegram chat ID (group or user)
+ * @param {object} reportData - Aggregated stats
+ */
+const sendWeeklyReport = async (chatId, reportData) => {
+    const { dateRange, devices, network, tasks, support, alerts, documents } = reportData;
+    
+    const message = `
+📊 <b>WEEKLY IT REPORT</b> (${dateRange})
+
+🖥️ Devices: ${devices.active} active / ${devices.maintenance} maintenance / ${devices.inactive} inactive
+🌐 Network: ${network.uptime}% avg uptime
+📋 Tasks: ${tasks.completed} completed / ${tasks.overdue} overdue / ${tasks.in_progress} in progress
+🎫 Support: ${support.new} new tickets / ${support.resolved} resolved
+📄 Documents: ${documents.uploaded} uploaded
+⚠️ Alerts: ${alerts.offline} devices offline > 24h
+    `.trim();
+
+    return await sendMessage(chatId, message);
+};
+
+// ==================== RATING NOTIFICATION ====================
+
+/**
+ * Send notification when a ticket receives a user rating
+ * @param {string} chatId - IT Staff's Telegram chat ID
+ * @param {object} ticket - Ticket object with rating info
+ */
+const sendRatingNotification = async (chatId, ticket) => {
+    const stars = '⭐'.repeat(ticket.rating) + '☆'.repeat(5 - ticket.rating);
+    const sentiment = ticket.rating >= 4 ? '😊' : ticket.rating >= 3 ? '😐' : '😟';
+
+    let assigneeName = 'N/A';
+    if (ticket.assigned_to) {
+        try {
+            const { User } = require('../models');
+            const user = await User.findByPk(ticket.assigned_to);
+            if (user) assigneeName = user.display_name || user.username;
+        } catch (e) {
+            console.error('Error fetching assignee for Telegram rating notification:', e);
+        }
+    }
+
+    const message = `
+${sentiment} <b>[SUPPORT] New Service Rating!</b>
+
+📝 <b>#${ticket.task_number || 'N/A'}</b>: ${ticket.title}
+👷 Assignee: <b>${assigneeName}</b>
+👤 From: <b>${ticket.requester_name || 'User'}</b>
+
+${stars} <b>${ticket.rating}/5</b>
+${ticket.rating_comment ? `\n💬 <b>User Comment:</b>\n"<i>${ticket.rating_comment}</i>"` : ''}
+
+🕐 Rated at: ${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+    `.trim();
+
+    return await sendMessage(chatId, message);
+};
+
 module.exports = {
     getBotToken,
     sendMessage,
@@ -286,7 +361,30 @@ module.exports = {
     sendTaskCreatedNotification,
     sendTaskCompletedNotification,
     // Support Ticket notifications
+    // SLA Daily Report
+    sendSlaReport: async (chatId, reportData) => {
+        if (!chatId) return { success: false, error: 'No chat ID provided' };
+
+        const { breachedTicketsCount, avgResolutionTime, tickets } = reportData;
+        
+        let message = `
+📊 <b>[SLA REPORT] Daily Update</b>
+
+❌ <b>${breachedTicketsCount}</b> tickets currently breaching SLA!
+⏱️ Avg Resolution Time: ${avgResolutionTime} hours.
+
+<b>Top Breached Tickets:</b>
+`;
+        tickets.slice(0, 5).forEach(t => {
+            message += `\n🔴 #${t.task_number || 'N/A'}: ${t.title} [${t.priority?.toUpperCase()}] - Assignee: ${t.assignee_name || 'Unassigned'}`;
+        });
+
+        return await sendMessage(chatId, message.trim());
+    },
+
     sendSupportTicketCreatedNotification,
     sendSupportTicketUpdateNotification,
-    notifyITStaff
+    notifyITStaff,
+    sendRatingNotification,
+    sendWeeklyReport,
 };

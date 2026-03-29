@@ -406,6 +406,197 @@ const getSegmentStats = async (req, res) => {
     }
 };
 
+// Export segment IPs to Excel
+const exportSegment = async (req, res) => {
+    try {
+        const segment = await NetworkSegment.findByPk(req.params.id);
+        if (!segment) {
+            return res.status(404).json({ success: false, message: 'Network segment not found' });
+        }
+
+        const ips = await IpAddress.findAll({
+            where: { segment_id: segment.id },
+            include: [
+                { model: Device, as: 'device', attributes: ['id', 'name', 'type', 'hostname'] },
+            ],
+            order: [['ip_address', 'ASC']],
+        });
+
+        // Sort IPs numerically
+        ips.sort((a, b) => {
+            const aParts = a.ip_address.split('.').map(Number);
+            const bParts = b.ip_address.split('.').map(Number);
+            for (let i = 0; i < 4; i++) {
+                if (aParts[i] !== bParts[i]) return aParts[i] - bParts[i];
+            }
+            return 0;
+        });
+
+        const statusLabels = {
+            free: 'Free',
+            in_use: 'In Use',
+            reserved: 'Reserved',
+            blocked: 'Blocked',
+            gateway: 'Gateway',
+        };
+
+        const rows = ips.map(ip => ({
+            'IP Address': ip.ip_address,
+            'Status': statusLabels[ip.status] || ip.status,
+            'Hostname': ip.hostname || '',
+            'MAC Address': ip.mac_address || '',
+            'Device': ip.device ? `${ip.device.name} (${ip.device.type || ''})` : '',
+            'Notes': ip.notes || '',
+        }));
+
+        const XLSX = require('xlsx');
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(rows);
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 18 }, // IP Address
+            { wch: 12 }, // Status
+            { wch: 25 }, // Hostname
+            { wch: 20 }, // MAC Address
+            { wch: 25 }, // Device
+            { wch: 35 }, // Notes
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, 'IP Addresses');
+
+        const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        const safeName = segment.name.replace(/[^a-zA-Z0-9_\-\s]/g, '').replace(/\s+/g, '_');
+        const safeCidr = segment.cidr.replace(/\//g, '-');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const fileName = `${safeName}_${safeCidr}_${dateStr}.xlsx`;
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.send(buf);
+    } catch (error) {
+        console.error('Export segment error:', error);
+        res.status(500).json({ success: false, message: 'Failed to export segment' });
+    }
+};
+
+// Import IPs from Excel file
+const importSegment = async (req, res) => {
+    try {
+        const segment = await NetworkSegment.findByPk(req.params.id);
+        if (!segment) {
+            return res.status(404).json({ success: false, message: 'Network segment not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+
+        const XLSX = require('xlsx');
+        const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws);
+
+        if (!rows.length) {
+            return res.status(400).json({ success: false, message: 'Excel file is empty' });
+        }
+
+        // Build lookup of existing IPs in segment
+        const existingIps = await IpAddress.findAll({ where: { segment_id: segment.id } });
+        const ipMap = {};
+        existingIps.forEach(ip => { ipMap[ip.ip_address] = ip; });
+
+        const statusMap = {
+            'free': 'free',
+            'in use': 'in_use',
+            'in_use': 'in_use',
+            'reserved': 'reserved',
+            'blocked': 'blocked',
+            'gateway': 'gateway',
+        };
+
+        const results = { updated: 0, skipped: 0, errors: [] };
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const ipAddress = (row['IP Address'] || '').toString().trim();
+
+            if (!ipAddress) {
+                results.skipped++;
+                continue;
+            }
+
+            const existingIp = ipMap[ipAddress];
+            if (!existingIp) {
+                results.errors.push(`Row ${i + 2}: IP ${ipAddress} not found in this segment`);
+                continue;
+            }
+
+            const updates = {};
+            let hasChanges = false;
+
+            // Status
+            if (row['Status'] !== undefined && row['Status'] !== null) {
+                const rawStatus = row['Status'].toString().trim().toLowerCase();
+                const mappedStatus = statusMap[rawStatus];
+                if (mappedStatus && mappedStatus !== existingIp.status) {
+                    updates.status = mappedStatus;
+                    hasChanges = true;
+                }
+            }
+
+            // Hostname
+            if (row['Hostname'] !== undefined) {
+                const val = row['Hostname'].toString().trim();
+                if (val !== (existingIp.hostname || '')) {
+                    updates.hostname = val || null;
+                    hasChanges = true;
+                }
+            }
+
+            // MAC Address
+            if (row['MAC Address'] !== undefined) {
+                const val = row['MAC Address'].toString().trim();
+                if (val !== (existingIp.mac_address || '')) {
+                    updates.mac_address = val || null;
+                    hasChanges = true;
+                }
+            }
+
+            // Notes
+            if (row['Notes'] !== undefined) {
+                const val = row['Notes'].toString().trim();
+                if (val !== (existingIp.notes || '')) {
+                    updates.notes = val || null;
+                    hasChanges = true;
+                }
+            }
+
+            if (hasChanges) {
+                await existingIp.update(updates);
+                results.updated++;
+            } else {
+                results.skipped++;
+            }
+        }
+
+        await createAuditLog(req.user.id, 'import', 'network_segments', segment.id, null, {
+            segment_name: segment.name,
+            total_rows: rows.length,
+            ...results,
+        }, req);
+
+        res.json({
+            success: true,
+            data: results,
+            message: `Import completed: ${results.updated} updated, ${results.skipped} skipped, ${results.errors.length} errors`,
+        });
+    } catch (error) {
+        console.error('Import segment error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import segment data' });
+    }
+};
+
 module.exports = {
     getSegments,
     getSegment,
@@ -413,4 +604,6 @@ module.exports = {
     updateSegment,
     deleteSegment,
     getSegmentStats,
+    exportSegment,
+    importSegment,
 };

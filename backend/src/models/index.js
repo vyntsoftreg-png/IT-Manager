@@ -12,6 +12,7 @@ const TaskComment = require('./TaskComment');
 const PersonalTask = require('./PersonalTask');
 const PersonalTaskCategory = require('./PersonalTaskCategory');
 const Document = require('./Document');
+const SlaTarget = require('./SlaTarget');
 
 // Define associations
 
@@ -177,4 +178,5 @@ module.exports = {
     PersonalTask,
     PersonalTaskCategory,
     Document,
+    SlaTarget,
 };

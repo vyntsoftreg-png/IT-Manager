@@ -40,6 +40,10 @@ const SettingsPage = () => {
     const [telegramLoading, setTelegramLoading] = useState(false);
     const [botConfigured, setBotConfigured] = useState(false);
     const [chatConfigured, setChatConfigured] = useState(false);
+    
+    // Scheduled Report settings
+    const [reportChatId, setReportChatId] = useState('');
+    const [reportSchedule, setReportSchedule] = useState('0 8 * * 0');
 
     // Load saved settings
     const savedSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
@@ -102,6 +106,12 @@ const SettingsPage = () => {
                         setBotToken(botRes.data.bot_token || '');
                         setBotConfigured(botRes.data.is_configured);
                     }
+                    
+                    const reportRes = await telegramService.getReportConfig();
+                    if (reportRes.success) {
+                        setReportChatId(reportRes.data.report_chat_id || '');
+                        setReportSchedule(reportRes.data.report_schedule || '0 8 * * 0');
+                    }
                 }
             } catch (error) {
                 console.error('Load telegram settings error:', error);
@@ -136,6 +146,23 @@ const SettingsPage = () => {
             }
         } catch (error) {
             message.error(error.response?.data?.message || 'Failed to save Chat ID');
+        } finally {
+            setTelegramLoading(false);
+        }
+    };
+
+    const handleSaveReportConfig = async () => {
+        setTelegramLoading(true);
+        try {
+            const res = await telegramService.updateReportConfig({
+                report_chat_id: reportChatId,
+                report_schedule: reportSchedule
+            });
+            if (res.success) {
+                message.success(res.message);
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Failed to save Report Config');
         } finally {
             setTelegramLoading(false);
         }
@@ -515,8 +542,49 @@ const SettingsPage = () => {
                                 type="success"
                                 showIcon
                                 icon={<CheckCircleOutlined />}
+                                style={{ marginBottom: 24 }}
                             />
                         )}
+
+                        <Divider />
+
+                        <Title level={5}>Weekly IT Report Settings</Title>
+                        <Alert
+                            message="Scheduled Reports"
+                            description="Configure the destination and schedule for the weekly IT system snapshot report."
+                            type="info"
+                            showIcon
+                            style={{ marginBottom: 16 }}
+                        />
+
+                        <Form.Item label="Report Chat ID (Target Group or User ID)">
+                            <Input
+                                placeholder="-1001234567890"
+                                value={reportChatId}
+                                onChange={(e) => setReportChatId(e.target.value)}
+                            />
+                        </Form.Item>
+
+                        <Form.Item label="Report Schedule (Cron Expression)">
+                            <Input
+                                placeholder="0 8 * * 0"
+                                value={reportSchedule}
+                                onChange={(e) => setReportSchedule(e.target.value)}
+                                addonAfter={<Text type="secondary">Min Hour Day Month Weekday</Text>}
+                            />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                Default: <code>0 8 * * 0</code> (Every Sunday at 08:00 AM)
+                            </Text>
+                        </Form.Item>
+
+                        <Button
+                            type="primary"
+                            onClick={handleSaveReportConfig}
+                            loading={telegramLoading}
+                            icon={<SaveOutlined />}
+                        >
+                            Save Report Settings
+                        </Button>
                     </Form>
                 </Card>
             ),

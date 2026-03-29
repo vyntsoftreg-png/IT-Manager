@@ -13,6 +13,12 @@ export const deviceService = {
         return response.data;
     },
 
+    // Get device QR code
+    getDeviceQRCode: async (id) => {
+        const response = await api.get(`/devices/${id}/qr`);
+        return response.data;
+    },
+
     // Create new device
     createDevice: async (data) => {
         const response = await api.post('/devices', data);

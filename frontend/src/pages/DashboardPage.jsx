@@ -214,10 +214,9 @@ const DashboardPage = () => {
         innerRadius: 0.6,
         color: ['#1890ff', '#52c41a'],
         label: {
-            type: 'inner',
-            offset: '-50%',
-            content: '{value}',
-            style: { textAlign: 'center', fontSize: 14, fill: '#fff' },
+            text: 'value',
+            position: 'inside',
+            style: { fill: '#fff', fontSize: 14, textAlign: 'center' },
         },
         legend: { position: 'bottom' },
         statistic: {
@@ -237,9 +236,9 @@ const DashboardPage = () => {
         xField: 'type',
         yField: 'count',
         color: '#1890ff',
-        label: { position: 'top' },
+        label: { text: 'count', position: 'top' },
         xAxis: { label: { autoRotate: false } },
-        columnStyle: { radius: [4, 4, 0, 0] },
+        style: { radiusTopLeft: 4, radiusTopRight: 4 },
     };
 
     // Device table columns
