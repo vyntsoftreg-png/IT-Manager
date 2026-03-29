@@ -23,10 +23,10 @@ const checkSlaDaily = async () => {
         return acc;
     }, {});
 
-    // We only care about open tickets for this alert, and maybe 30 day history for avg
+    // We only care about tickets that are currently 'open' (nobody has started working on them)
     const openTickets = await Task.findAll({
         where: {
-            status: { [Op.notIn]: ['resolved', 'closed'] }
+            status: 'open'
         },
         raw: true
     });
@@ -59,30 +59,30 @@ const checkSlaDaily = async () => {
 
     await telegramService.sendSlaReport(chatIdSetting.value, {
         breachedTicketsCount: breachedTickets.length,
-        avgResolutionTime: 'N/A', // Omitted for daily alert unless we query resolved items too
+        avgResolutionTime: 'N/A', // Omitted for hourly alert unless we query resolved items too
         tickets: breachedWithUsers
     });
 };
 
 const initSlaWorker = async () => {
-    // Run at 9:00 AM every day
-    const schedule = '0 9 * * *';
+    // Run at the beginning of every hour (e.g. 9:00, 10:00, 11:00)
+    const schedule = '0 * * * *';
 
     if (currentTask) {
         currentTask.stop();
     }
 
     currentTask = cron.schedule(schedule, async () => {
-        console.log('⏳ Running SLA Daily Worker...');
+        console.log('⏳ Running SLA Hourly Worker...');
         try {
-            await checkSlaDaily();
-            console.log('✅ SLA Daily Worker finished');
+            await checkSlaDaily(); // Re-used existing logic function but run hourly
+            console.log('✅ SLA Hourly Worker finished');
         } catch (error) {
             console.error('❌ SLA Worker error:', error);
         }
     });
 
-    console.log(`⏱️ SLA Worker scheduled: ${schedule}`);
+    console.log(`⏱️ SLA Worker scheduled (Hourly): ${schedule}`);
 };
 
 module.exports = {

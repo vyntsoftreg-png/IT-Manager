@@ -366,9 +366,8 @@ module.exports = {
         if (!chatId) return { success: false, error: 'No chat ID provided' };
 
         const { breachedTicketsCount, avgResolutionTime, tickets } = reportData;
-        
         let message = `
-📊 <b>[SLA REPORT] Daily Update</b>
+📊 <b>[SLA ALERT] Hourly Warning</b>
 
 ❌ <b>${breachedTicketsCount}</b> tickets currently breaching SLA!
 ⏱️ Avg Resolution Time: ${avgResolutionTime} hours.
