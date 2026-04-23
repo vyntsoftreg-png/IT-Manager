@@ -9,11 +9,10 @@ let currentTask = null;
 const checkSlaDaily = async () => {
     // Check if telegram bot is configured
     const botTokenSetting = await SystemSetting.findOne({ where: { category: 'telegram', key: 'bot_token' } });
-    if (!botTokenSetting || !botTokenSetting.value) return;
+    if (!botTokenSetting || !botTokenSetting.label) return;
 
-    // Get report chat ID
+    // Get report chat ID (optional now - will fallback to IT staff)
     const chatIdSetting = await SystemSetting.findOne({ where: { category: 'telegram', key: 'report_chat_id' } });
-    if (!chatIdSetting || !chatIdSetting.value) return;
 
     const targets = await SlaTarget.findAll({ raw: true });
     if (!targets.length) return;
@@ -57,11 +56,29 @@ const checkSlaDaily = async () => {
 
     breachedWithUsers.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Oldest first
 
-    await telegramService.sendSlaReport(chatIdSetting.value, {
+    const reportData = {
         breachedTicketsCount: breachedTickets.length,
         avgResolutionTime: 'N/A', // Omitted for hourly alert unless we query resolved items too
         tickets: breachedWithUsers
-    });
+    };
+
+    if (chatIdSetting && chatIdSetting.label) {
+        await telegramService.sendSlaReport(chatIdSetting.label, reportData);
+    } else {
+        // Fallback: Notify individual admins/IT support if global chat is not set
+        const staff = await User.findAll({ 
+            where: { 
+                role: ['admin', 'manager', 'it_support'],
+                telegram_chat_id: { [Op.not]: null } 
+            } 
+        });
+
+        for (const user of staff) {
+            if (user.telegram_chat_id) {
+                await telegramService.sendSlaReport(user.telegram_chat_id, reportData);
+            }
+        }
+    }
 };
 
 const initSlaWorker = async () => {

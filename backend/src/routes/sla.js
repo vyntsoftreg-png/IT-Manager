@@ -5,6 +5,9 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+// Manual trigger SLA worker
+router.post('/trigger-worker', requireRole('admin'), slaController.triggerWorker);
+
 // Get all SLA targets
 router.get('/targets', slaController.getTargets);
 

@@ -186,7 +186,7 @@ const SlaPage = () => {
     ];
 
     return (
-        <div style={{ padding: 24 }}>
+        <div className="sla-page" style={{ padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                 <Title level={4} style={{ margin: 0 }}>
                     <DashboardOutlined style={{ marginRight: 8 }} />
@@ -211,7 +211,7 @@ const SlaPage = () => {
                     <>
                         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                             <Col xs={24} sm={12} md={6}>
-                                <Card padding="small">
+                                <Card className="stat-card stat-card-primary">
                                     <Statistic 
                                         title="Total Tickets" 
                                         value={metrics.totalTickets} 
@@ -219,7 +219,7 @@ const SlaPage = () => {
                                 </Card>
                             </Col>
                             <Col xs={24} sm={12} md={6}>
-                                <Card>
+                                <Card className="stat-card stat-card-success">
                                     <Statistic 
                                         title="SLA Met" 
                                         value={metrics.metSla} 
@@ -229,7 +229,7 @@ const SlaPage = () => {
                                 </Card>
                             </Col>
                             <Col xs={24} sm={12} md={6}>
-                                <Card>
+                                <Card className="stat-card stat-card-warning">
                                     <Statistic 
                                         title="SLA Breached" 
                                         value={metrics.breachedSla} 
@@ -239,7 +239,7 @@ const SlaPage = () => {
                                 </Card>
                             </Col>
                             <Col xs={24} sm={12} md={6}>
-                                <Card>
+                                <Card className="stat-card stat-card-info">
                                     <Statistic 
                                         title="Avg Resolution Time (Hours)" 
                                         value={metrics.avgResolutionTimeHours} 

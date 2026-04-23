@@ -188,6 +188,23 @@ const slaController = {
             console.error('Get dashboard metrics error:', error);
             res.status(500).json({ success: false, message: 'Error loading SLA dashboard data' });
         }
+    },
+
+    // Manual trigger for SLA hourly worker
+    triggerWorker: async (req, res) => {
+        try {
+            if (req.user.role !== 'admin') {
+                return res.status(403).json({ success: false, message: 'Access denied' });
+            }
+            
+            const { checkSlaDaily } = require('../workers/slaWorker');
+            await checkSlaDaily();
+            
+            res.json({ success: true, message: 'SLA check triggered successfully' });
+        } catch (error) {
+            console.error('Trigger SLA worker error:', error);
+            res.status(500).json({ success: false, message: 'Error triggering SLA worker' });
+        }
     }
 };
 

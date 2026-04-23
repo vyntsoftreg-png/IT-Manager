@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { IpAddress, PingHistory, NetworkSegment, Device } = require('../models');
 const pingService = require('../utils/pingService');
+const { getVendorFromMac } = require('../utils/ouiCache');
 
 // Ping all IPs in a segment
 const pingSegment = async (req, res) => {
@@ -110,15 +111,17 @@ const pingSegment = async (req, res) => {
             await PingHistory.bulkCreate(historyRecords);
         }
 
-        // Map results with IP info
+        // Map results with IP info + vendor lookup
         const enrichedResults = {};
         for (const ip of ips) {
             const result = pingResults[ip.ip_address];
+            const mac = result?.mac || ip.mac_address;
             enrichedResults[ip.ip_address] = {
                 ...result,
                 ipId: ip.id,
                 hostname: ip.hostname,
                 ipStatus: ip.status,
+                vendor: mac ? getVendorFromMac(mac) : null,
             };
         }
 
@@ -345,6 +348,7 @@ const getAllLatestStatus = async (req, res) => {
                 mac: ping.mac_address,
                 hasConflict: ping.has_conflict === 1,
                 previousMac: ping.previous_mac,
+                vendor: ping.mac_address ? getVendorFromMac(ping.mac_address) : null,
             };
         }
 

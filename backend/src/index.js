@@ -16,37 +16,41 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-// Configure helmet for SPA - allow inline scripts needed by Vite/React
+const isDev = process.env.NODE_ENV !== 'production';
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for Vite/Dev
+            scriptSrc: isDev
+                ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+                : ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "http://localhost:5173", "ws://localhost:5173", "http:", "ws:"], // Allow insecure connections
-            upgradeInsecureRequests: null, // Disable auto-upgrade to HTTPS
+            connectSrc: isDev
+                ? ["'self'", "http://localhost:5173", "ws://localhost:5173", "http:", "ws:"]
+                : ["'self'"],
+            upgradeInsecureRequests: isDev ? null : [],
         },
     },
     crossOriginEmbedderPolicy: false,
-    strictTransportSecurity: false, // Disable HSTS to prevent forced HTTPS
+    strictTransportSecurity: !isDev,
 }));
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     credentials: true,
 }));
-app.set('trust proxy', true); // Trust proxy headers (X-Forwarded-For)
-app.use(morgan('dev'));
-app.use(express.json({ limit: '50mb' })); // Increased limit for backup imports
+app.set('trust proxy', true);
+app.use(morgan(isDev ? 'dev' : 'combined'));
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Health check endpoint (before routes to always be accessible)
+app.get('/api/health', (req, res) => {
+    res.json({ success: true, message: 'IT Manager API is running', timestamp: new Date().toISOString() });
+});
 
 // API Routes
 app.use('/api', routes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 // Serve frontend static files in production
 if (process.env.NODE_ENV === 'production') {
@@ -83,95 +87,18 @@ app.use((req, res) => {
 // Start server
 const startServer = async () => {
     try {
-        // Sync database - columns were added via migrate.js
-        // Migrate: add is_public column to documents if missing
-        try {
-            const [cols] = await sequelize.query("PRAGMA table_info('documents')");
-            if (!cols.find(c => c.name === 'is_public')) {
-                await sequelize.query("ALTER TABLE documents ADD COLUMN is_public TINYINT(1) DEFAULT 1");
-                await sequelize.query("UPDATE documents SET is_public = 1 WHERE is_public IS NULL");
-                console.log('✅ Added is_public column to documents');
-            }
-            if (!cols.find(c => c.name === 'thumbnail')) {
-                await sequelize.query("ALTER TABLE documents ADD COLUMN thumbnail BLOB");
-                console.log('✅ Added thumbnail column to documents');
-            }
-        } catch (e) { /* table may not exist yet, sync will create it */ }
-
-        // Migrate: add task_number column to personal_tasks if missing
-        try {
-            const [ptCols] = await sequelize.query("PRAGMA table_info('personal_tasks')");
-            if (!ptCols.find(c => c.name === 'task_number')) {
-                await sequelize.query("ALTER TABLE personal_tasks ADD COLUMN task_number VARCHAR(30)");
-                console.log('✅ Added task_number column to personal_tasks');
-            }
-        } catch (e) { /* table may not exist yet, sync will create it */ }
-        // Migrate: add rating columns to tasks if missing
-        try {
-            const [taskCols] = await sequelize.query("PRAGMA table_info('tasks')");
-            if (!taskCols.find(c => c.name === 'rating')) {
-                await sequelize.query("ALTER TABLE tasks ADD COLUMN rating INTEGER");
-                console.log('✅ Added rating column to tasks');
-            }
-            if (!taskCols.find(c => c.name === 'rating_comment')) {
-                await sequelize.query("ALTER TABLE tasks ADD COLUMN rating_comment TEXT");
-                console.log('✅ Added rating_comment column to tasks');
-            }
-            if (!taskCols.find(c => c.name === 'rated_at')) {
-                await sequelize.query("ALTER TABLE tasks ADD COLUMN rated_at DATETIME");
-                console.log('✅ Added rated_at column to tasks');
-            }
-        } catch (e) { /* table may not exist yet, sync will create it */ }
+        // Run database migrations (add missing columns)
+        const { runMigrations, seedPersonalTaskNumbers, generateMissingThumbnails } = require('./database/migrations');
+        await runMigrations(sequelize);
 
         await sequelize.sync();
         console.log('✅ Database synchronized');
 
-        // Migrate: assign task_numbers to existing personal tasks without one
-        try {
-            const { PersonalTask } = require('./models');
-            const tasksWithoutNumber = await PersonalTask.findAll({
-                where: { task_number: null, parent_id: null },
-                order: [['created_at', 'ASC']]
-            });
-            if (tasksWithoutNumber.length > 0) {
-                console.log(`🔄 Assigning task_numbers to ${tasksWithoutNumber.length} personal tasks...`);
-                for (let i = 0; i < tasksWithoutNumber.length; i++) {
-                    const task = tasksWithoutNumber[i];
-                    const year = new Date(task.created_at).getFullYear();
-                    const task_number = `${year}-MyTask-${String(i + 1).padStart(4, '0')}`;
-                    await task.update({ task_number });
-                }
-                console.log('✅ Personal task numbers assigned');
-            }
-        } catch (e) {
-            console.error('Migration error (personal task numbers):', e.message);
-        }
+        // Post-sync data migrations
+        await seedPersonalTaskNumbers();
 
-        // Background: generate thumbnails for existing documents without one
-        (async () => {
-            try {
-                const { Document } = require('./models');
-                const XLSX = require('xlsx');
-                const mammoth = require('mammoth');
-                const docs = await Document.findAll({
-                    where: { thumbnail: null, file_extension: ['docx', 'xlsx', 'pptx'] },
-                    attributes: ['id', 'file_data', 'file_extension'],
-                });
-                if (docs.length === 0) return;
-                console.log(`🔄 Generating thumbnails for ${docs.length} documents...`);
-                const { generateThumbnailForExisting } = require('./controllers/documentController');
-                for (const doc of docs) {
-                    try {
-                        const thumb = await generateThumbnailForExisting(doc.file_data, doc.file_extension);
-                        if (thumb) {
-                            await doc.update({ thumbnail: thumb });
-                            console.log(`  ✅ Thumbnail for doc #${doc.id}`);
-                        }
-                    } catch (e) { /* skip */ }
-                }
-                console.log('✅ Thumbnail generation complete');
-            } catch (e) { console.error('Thumbnail generation error:', e.message); }
-        })();
+        // Background thumbnail generation (non-blocking)
+        generateMissingThumbnails();
 
         // Auto-seed default admin user if no users exist
         const { User } = require('./models');

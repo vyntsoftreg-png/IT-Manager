@@ -511,7 +511,308 @@ body.dark-theme .ant-empty-description {
 }
 
 /* ===================================
-   Statistics Cards
+   Dashboard — Command Center Design
+   =================================== */
+
+.db-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.db-header-left h3 {
+  margin-bottom: 2px !important;
+}
+
+.db-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.db-header-actions .ant-btn {
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Section Wrapper */
+.db-section {
+  margin-bottom: 24px;
+}
+
+/* Section Header */
+.db-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.db-section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-section-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.db-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-primary);
+}
+
+.db-section-extra a {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.db-section-extra a:hover {
+  gap: 8px;
+}
+
+/* Stat Cards */
+.db-stat-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.db-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent, #3B82F6);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.db-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.db-stat-card:hover::before {
+  opacity: 1;
+}
+
+.db-stat-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-stat-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.db-stat-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.db-stat-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.db-stat-card-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.db-stat-card-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Dashboard Cards */
+.db-card {
+  box-shadow: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  height: 100%;
+}
+
+.db-card .ant-card-head {
+  min-height: auto;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.db-card .ant-card-head-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.db-card .ant-card-extra a {
+  font-size: 12px;
+}
+
+/* Segment Rows */
+.db-segment-row {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 2px;
+}
+
+.db-segment-row:last-child {
+  border-bottom: none;
+}
+
+.db-segment-row:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.db-segment-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Account List */
+.db-account-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 2px;
+}
+
+.db-account-row:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+/* Document Summary */
+.db-doc-summary {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.db-doc-big-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.db-doc-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Operations Flex Grid */
+.db-ops-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.db-ops-grid > .db-stat-card {
+  flex: 1 1 0;
+  min-width: 150px;
+}
+
+@media (max-width: 768px) {
+  .db-ops-grid > .db-stat-card {
+    flex: 1 1 calc(50% - 12px);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .db-ops-grid > .db-stat-card {
+    flex: 1 1 100%;
+  }
+}
+
+/* ===================================
+   Dashboard Dark Mode
+   =================================== */
+
+body.dark-theme .db-stat-card {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+body.dark-theme .db-stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .db-card {
+  border-color: #2a2a2a;
+}
+
+body.dark-theme .db-segment-row {
+  border-bottom-color: #2a2a2a;
+}
+
+body.dark-theme .db-segment-row:hover,
+body.dark-theme .db-account-row:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+body.dark-theme .db-section-header {
+  border-bottom-color: #2a2a2a;
+}
+
+/* ===================================
+   Statistics Cards (Legacy Support)
    =================================== */
 
 .stat-card {
@@ -823,4 +1124,31 @@ body.dark-theme .ant-empty-description {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+body.dark-theme ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+/* ===================================
+   Page Animation Classes
+   =================================== */
+
+.sla-page,
+.personal-tasks-page,
+.backup-page,
+.documents-page,
+.profile-page,
+.settings-page,
+.audit-page,
+.tasks-page {
+  animation: fadeIn 0.3s ease;
 }

@@ -10,7 +10,7 @@ import {
     DeleteOutlined, GlobalOutlined, WifiOutlined, LinkOutlined,
     DisconnectOutlined, CheckCircleOutlined, CloseCircleOutlined,
     ExclamationCircleOutlined, LockOutlined, PlayCircleOutlined,
-    PauseCircleOutlined, RadarChartOutlined,
+    PauseCircleOutlined, RadarChartOutlined, ApartmentOutlined,
     DownloadOutlined, UploadOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ import { deviceService } from '../services/deviceService';
 import { pingService } from '../services/pingService';
 import { useAuth } from '../contexts/AuthContext';
 import PingStatusDot from '../components/PingStatusDot';
+import NetworkMap from '../components/NetworkMap';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -49,6 +50,7 @@ const IpMapPage = () => {
     const [importLoading, setImportLoading] = useState(false);
     const [importResult, setImportResult] = useState(null);
     const [exportLoading, setExportLoading] = useState(false);
+    const [isTopologyOpen, setIsTopologyOpen] = useState(false);
 
     // Ping state
     const [isPinging, setIsPinging] = useState(false);
@@ -523,6 +525,23 @@ const IpMapPage = () => {
             },
         },
         {
+            title: 'Vendor',
+            key: 'vendor',
+            width: 140,
+            ellipsis: true,
+            render: (_, record) => {
+                const ping = pingStatus[record.ip_address];
+                const vendor = ping?.vendor;
+                if (!vendor || vendor === 'Unknown' || vendor === 'Resolving...') {
+                    return <Text type="secondary" style={{ fontSize: 12 }}>{vendor || '-'}</Text>;
+                }
+                if (vendor === 'Unknown Vendor') {
+                    return <Tag color="default" style={{ fontSize: 11 }}>N/A</Tag>;
+                }
+                return <Tag color="cyan" style={{ fontSize: 11 }}>{vendor}</Tag>;
+            },
+        },
+        {
             title: t('ipMap.notes'),
             dataIndex: 'notes',
             key: 'notes',
@@ -805,6 +824,15 @@ const IpMapPage = () => {
                                                     Import
                                                 </Button>
                                             </Tooltip>
+                                            <Tooltip title="Topology Map">
+                                                <Button
+                                                    icon={<ApartmentOutlined />}
+                                                    onClick={() => setIsTopologyOpen(true)}
+                                                    style={{ borderColor: '#177ddc', color: '#177ddc' }}
+                                                >
+                                                    Topology
+                                                </Button>
+                                            </Tooltip>
                                         </Space>
                                     )
                                 }
@@ -1065,6 +1093,27 @@ const IpMapPage = () => {
                     </div>
                 )}
             </Modal>
+
+            {/* Topology Map Drawer */}
+            <Drawer
+                title={`🗺️ Network Topology - ${selectedSegment?.name || ''}`}
+                placement="bottom"
+                height="85vh"
+                open={isTopologyOpen}
+                onClose={() => setIsTopologyOpen(false)}
+                styles={{
+                    body: { padding: 0, background: '#141414' },
+                    header: { background: '#1a1a1a', borderBottom: '1px solid #303030' },
+                }}
+            >
+                {isTopologyOpen && selectedSegment && (
+                    <NetworkMap
+                        segment={selectedSegment}
+                        pingStatus={pingStatus}
+                        rawIps={rawIps}
+                    />
+                )}
+            </Drawer>
         </div>
     );
 };

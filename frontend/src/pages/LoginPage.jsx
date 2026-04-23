@@ -51,7 +51,7 @@ const LoginPage = () => {
                         <div className="login-logo">
                             <span className="logo-icon">{branding.app_logo}</span>
                         </div>
-                        <Title level={2} style={{ margin: 0, color: '#1a1a2e' }}>
+                        <Title level={2} style={{ margin: 0 }}>
                             {branding.app_name}
                         </Title>
                         <Text type="secondary">
